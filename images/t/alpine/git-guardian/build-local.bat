@@ -1,21 +1,21 @@
 @echo off
 REM SPDX-License-Identifier: Apache-2.0
 
-REM Check if the Docker image 's-alpine:git-guardian' exists
-docker image inspect s-alpine:git-guardian >nul 2>&1
+REM Check if the Docker image 'git-guardian-s:alpine' exists
+docker image inspect git-guardian-s:alpine >nul 2>&1
 if errorlevel 1 (
-    echo Image 's-alpine:git-guardian' not found. Building it first...
+    echo Image 'git-guardian-s:alpine' not found. Building it first...
     pushd .
     cd ..\..\..\s\alpine\git-guardian
     call build-local.bat
     if errorlevel 1 (
-        echo Failed to build 's-alpine:git-guardian' image.
+        echo Failed to build 'git-guardian-s:alpine' image.
         popd
         exit /b 1
     )
     popd
 )
 
-docker buildx build -t t-alpine:git-guardian .
+docker buildx build -t git-guardian-t:alpine .
 
 @REM Made with Bob

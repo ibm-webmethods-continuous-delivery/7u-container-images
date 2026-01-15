@@ -1,8 +1,8 @@
-ARG __base_image=s-alpine:git-guardian
+ARG __base_image=git-guardian-s:alpine
 FROM ${__base_image}
 
 # Dependency -> posix utils
-ARG __iwcd_pu_tag=v0.0.9
+ARG __iwcd_pu_tag=v0.1.0
 ARG __iwcd_base_url=https://raw.githubusercontent.com/ibm-webmethods-continuous-delivery/2l-posix-shell-utils/refs/tags/${__iwcd_pu_tag}
 ARG __iwcd_pu_audit_sh_url=${__iwcd_base_url}/code/1.init.sh
 
