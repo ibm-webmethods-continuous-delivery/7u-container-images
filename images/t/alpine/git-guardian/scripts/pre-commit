@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Pre-commit hook to run checks like trivy scan
+# This hook is installed globally via git init.templateDir See Dockerfile
+
+pu_log_i "GG|PreCommit === Running Trivy Security Scan ==="
+__gg_pre_scan_errors=0
+
+if [ ! gg_trivy_scan ]; then
+  pu_log_e "Trivy scan failed!"
+  __gg_pre_scan_errors=$((__gg_pre_scan_errors+1))
+fi
+
+if [ "$__gg_pre_scan_errors" -gt 0 ]; then
+  pu_log_e "$__gg_pre_scan_errors pre-commit errors found. Correct them before committing!"
+  unset __gg_pre_scan_errors
+  exit 1
+fi
+
+unset __gg_pre_scan_errors

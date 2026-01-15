@@ -1,0 +1,4 @@
+url,path,name
+git@github.com:IBM/repo-template.git,aio/d/IBM,repo-template
+git@github.com:ibm-webmethods-continuous-delivery/.github.git,aio/c/iwcd,.github
+git@github.com:ibm-webmethods-continuous-delivery/2l-unattended-installation-templates.git,aio/c/iwcd,2l-unattended-installation-templates

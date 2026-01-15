@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# shellcheck source-path=SCRIPTDIR/scripts
+
+# User aliases and environment
+alias ll="ls -lah"
+alias scommit="git commit -s"
+alias scommitg="git commit -S -s"
+alias smerge="git merge --signoff"
+alias samend="git commit --amend -S -s"
+alias spush="git push --signed"
+alias slog="git log --show-signature"
+alias srebase="git rebase --signoff"
+alias sclone="git clone --config commit.gpgsign=true"
+alias setup-ssh-key='${GG_PROVIDED_SCRIPTS_HOME}/setup-ssh-key.sh'
+alias configure-git='${GG_PROVIDED_SCRIPTS_HOME}/gitconfig.sh'
+
+# Source all files in ${PU_HOME}/code/ directory
+# to check: sourcing MUST occur in lexicographic order
+if [ -d "${PU_HOME}/code" ]; then
+  for script in "${PU_HOME}/code"/*; do
+
+    # we cannot determine the file names from this develpment point
+    # shellcheck source=/dev/null
+    [ -f "$script" ] && . "$script"
+  done
+fi
+
+if [ ! -f "${GG_PROVIDED_SCRIPTS_HOME}/git-guardian-utils.sh" ]; then
+  pu_msg_fail_utf8 ".ashrc - Mandatory file missing: ${GG_PROVIDED_SCRIPTS_HOME}/git-guardian-utils.sh"
+else
+  . "${GG_PROVIDED_SCRIPTS_HOME}/git-guardian-utils.sh"
+fi
+
+if [ ! -d "${GG_PROVIDED_SCRIPTS_HOME}" ]; then
+  echo "WARNING: folder specified in the env var GG_PROVIDED_SCRIPTS_HOME (${GG_PROVIDED_SCRIPTS_HOME}) does not exist!"
+fi
