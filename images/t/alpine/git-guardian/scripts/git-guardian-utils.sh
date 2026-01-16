@@ -173,32 +173,33 @@ _gg_repo_get_status() {
 }
 
 # Function 32 - Check if repository has local changes
+# Returns 0 (success) if changes are detected, 1 (failure) if no changes
 _gg_repo_has_changes() {
-  _gg_repo_is_git_repo "${1}" || return 0 # no repo means no changes
+  _gg_repo_is_git_repo "${1}" || return 1 # no repo means no changes
 
   local orig_path=$(pwd)
 
-  cd "${1}" || return 0
+  cd "${1}" || return 1
 
   # Check staged files
   if [ "$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
     pu_log_d "Repo $1 has staged changes"
     cd "${orig_path}"
-    return 1
+    return 0
   fi
   
   # Check unstaged files
   if [ "$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
     pu_log_d "Repo $1 has unstaged changes"
     cd "${orig_path}"
-    return 1
+    return 0
   fi
   
   # Check untracked files
   if [ "$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
     pu_log_d "Repo $1 has untracked files"
     cd "${orig_path}"
-    return 1
+    return 0
   fi
   
   # Check commits ahead/behind
@@ -210,16 +211,17 @@ _gg_repo_has_changes() {
     if [ "${commits_behind}" -ne 0 ]; then
       pu_log_d "GG|32 Repo $1 is behind origin (${commits_behind})"
       cd "${orig_path}"
-      return 1
+      return 0
     fi
     commits_ahead="$(git rev-list --count "$upstream"..HEAD 2>/dev/null || echo '0')"
     if [ "${commits_ahead}" -ne 0 ]; then
       pu_log_d "GG|32 Repo $1 is ahead of origin (${commits_ahead})"
       cd "${orig_path}"
-      return 1
+      return 0
     fi
   fi
   cd "${orig_path}"
+  return 1  # No changes detected
 }
 
 # Function 33 - Find all git repositories under a base directory
