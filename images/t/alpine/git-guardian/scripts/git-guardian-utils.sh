@@ -73,21 +73,25 @@ gg_assure_git_config() {
   fi
   unset __gg_assure_git_config_errors
 
+  [ ! -f "$HOME/.ssh/allowed_signers" ] && touch "${HOME}/.ssh/allowed_signers"
+
+  local tmp_pub_key
+  tmp_pub_key=$(cat "${__gg_ssh_key_file}.pub")
+  echo "${GG_USER_EMAIL} ${tmp_pub_key})" > /dev/shm/ssh_allowed_signers
+  sort /dev/shm/ssh_allowed_signers | uniq  > "${HOME}/.ssh/allowed_signers"
+  rm /dev/shm/ssh_allowed_signers
+
   git config --global commit.gpgsign true
   git config --global core.autocrlf input
   git config --global core.eol lf
   git config --global core.filemode true
   git config --global core.safecrlf warn
   git config --global gpg.format ssh
-
-  git config --global user.name "${GG_GIT_USER_NAME}"
+  git config --global gpg.ssh.allowedSignersFile "${HOME}//.ssh/allowed_signers"
+  git config --global pull.ff only
   git config --global user.email "${GG_USER_EMAIL}"
-
-  [ ! -f "$HOME/.ssh/allowed_signers" ] && touch "$HOME/.ssh/allowed_signers"
-
-  echo "${GG_USER_EMAIL} $(cat \"${__gg_ssh_key_file}.pub\")" > /dev/shm/ssh_allowed_signers
-  sort /dev/shm/ssh_allowed_signers | uniq  > "${HOME}/.ssh/allowed_signers"
-  rm /dev/shm/ssh_allowed_signers
+  git config --global user.name "${GG_GIT_USER_NAME}"
+  git config --global user.signingkey "${HOME}/.ssh/id_ed25519.pub"
 
   pu_log_i "GG|05 Git global configuration completed successfully!"
 }
@@ -239,15 +243,16 @@ _gg_repo_fetch_one() {
     return 1
   fi
 
-  local orig_pwd="$(pwd)"
+  local orig_pwd
+  orig_pwd="$(pwd)"
   
   cd "$repo_path" || return 2
-  pu_log_i "GG|34 Fetching $repo_name [url=$(git remote get-url --all origin)]..."
+  pu_log_i "GG|34 Fetching $repo_path [url=$(git remote get-url --all origin)]..."
   
   # Fetch all remotes
   if ! git fetch --all --prune 2>&1; then
-    pu_log_e "GG|34 Failed to fetch $repo_name"
-    cd "${orig_pwd}"
+    pu_log_e "GG|34 Failed to fetch $repo_path"
+    cd "${orig_pwd}" || return 3
     return 1
   fi
   
@@ -256,8 +261,8 @@ _gg_repo_fetch_one() {
   current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
   
   if [ "$current_branch" = "unknown" ] || [ -z "$current_branch" ]; then
-    pu_log_w "GG|34 Could not determine current branch for $repo_name, skipping pull"
-    cd "${orig_pwd}"
+    pu_log_w "GG|34 Could not determine current branch for $repo_path, skipping pull"
+    cd "${orig_pwd}" || return 4
     return 0
   fi
   
@@ -276,24 +281,24 @@ _gg_repo_fetch_one() {
   fi
   
   if [ "$has_local_changes" -eq 1 ]; then
-    pu_log_w "GG|34 $repo_name has uncommitted changes - skipping pull"
-    cd "${orig_pwd}"
+    pu_log_w "GG|34 $repo_path has uncommitted changes - skipping pull"
+    cd "${orig_pwd}" || return 5
     return 0
   fi
   
   # Update current branch if it has an upstream
   if git rev-parse --verify "@{upstream}" > /dev/null 2>&1; then
-    pu_log_i "GG|34 Updating branch $current_branch in $repo_name..."
+    pu_log_i "GG|34 Updating branch $current_branch in $repo_path..."
     if git pull --ff-only 2>&1; then
-      pu_log_i "GG|34 Successfully updated $repo_name"
+      pu_log_i "GG|34 Successfully updated $repo_path"
     else
-      pu_log_w "GG|34 Could not fast-forward $repo_name (may have diverged from upstream)"
+      pu_log_w "GG|34 Could not fast-forward $repo_path (may have diverged from upstream)"
     fi
   else
-    pu_log_i "GG|34 No upstream configured for branch $current_branch in $repo_name"
+    pu_log_i "GG|34 No upstream configured for branch $current_branch in $repo_path"
   fi
   
-  cd "${orig_pwd}"
+  cd "${orig_pwd}"  || return 6
 }
 
 # Function 35 - Clone or update repository from CSV entry
@@ -317,12 +322,12 @@ _gg_repo_clone_or_update() {
     _gg_repo_fetch_one "$repo_path" "$repo_name"
   else
     # Repository doesn't exist, clone it
-    pu_log_i "GG|35 Cloning $repo_name from $url..."
+    pu_log_i "GG|35 Cloning $repo_path from $url..."
     
     if git clone "$url" "$parent_dir"/"$repo_name" 2>&1; then
-      pu_log_i "GG|35 Successfully cloned $repo_name"
+      pu_log_i "GG|35 Successfully cloned $repo_path"
     else
-      pu_log_e "GG|35 Failed to clone $repo_name from $url"
+      pu_log_e "GG|35 Failed to clone $repo_path from $url"
       return 1
     fi
   fi
