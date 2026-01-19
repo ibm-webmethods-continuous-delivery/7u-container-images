@@ -1,6 +1,11 @@
 ARG __alpine_tag=3.23
 FROM alpine:${__alpine_tag}
 
+#
+# Copyright IBM Corp. 2025 - 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+
 RUN apk update --no-cache \
     && apk upgrade --no-cache \
     && apk add --no-cache \
