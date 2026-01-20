@@ -1,18 +1,37 @@
 #!/bin/sh
 
+# Copyright IBM Corporation All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Pre-commit hook to run checks like trivy scan
 # This hook is installed globally via git init.templateDir See Dockerfile
 
-pu_log_i "GG|PreCommit === Running Trivy Security Scan ==="
+set -e
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+printf "%bGG|PreCommit === Running Pre Commit checks ===%b\n" "${YELLOW}" "${NC}"
 __gg_pre_scan_errors=0
 
-if [ ! gg_trivy_scan ]; then
-  pu_log_e "Trivy scan failed!"
+printf "%bGG|PreCommit === Running Trivy Security Scan ===%b\n" "${YELLOW}" "${NC}"
+# Run Trivy scan, skipping .ssh directories
+if trivy fs --skip-dirs "**/.git" .; then
+  printf "%b✅ Trivy scan passed! Proceeding with commit.%b\n" "${GREEN}" "${NC}"
+else
+  printf "%b❌ Trivy scan failed!%b\n" "${RED}" "${NC}"
   __gg_pre_scan_errors=$((__gg_pre_scan_errors+1))
 fi
 
+## Future / customization: add other checks as needed
+
+## Final interpretation
 if [ "$__gg_pre_scan_errors" -gt 0 ]; then
-  pu_log_e "$__gg_pre_scan_errors pre-commit errors found. Correct them before committing!"
+  printf "%b❌ pre-commit checks failed! Correct them before committing. Commit aborted.%b\n" "${RED}" "${NC}"
+  printf "%bTo bypass this check (not recommended), use: git commit --no-verify%b\n" "${YELLOW}" "${NC}"
   unset __gg_pre_scan_errors
   exit 1
 fi

@@ -1,10 +1,13 @@
 #!/bin/sh
 
+# Copyright IBM Corporation All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # shellcheck disable=SC3043
 # SC3043 is about the usage of "local" keyword. While it is not strictly POSIX compliant,
 # it works with out current software stack and simplifies our code.
 
-pu_log_i "Sourcing git guardian commands..."
+pu_log_i "GG|-- Sourcing git guardian commands..."
 
 # Function 02
 gg_assure_user_email(){
@@ -177,31 +180,40 @@ _gg_repo_get_status() {
 _gg_repo_has_changes() {
   _gg_repo_is_git_repo "${1}" || return 1 # no repo means no changes
 
-  local orig_path=$(pwd)
+  local orig_path
+  orig_path=$(pwd)
 
   cd "${1}" || return 1
 
+  local changes_types_no=0
+
   # Check staged files
-  if [ "$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
-    pu_log_d "Repo $1 has staged changes"
-    cd "${orig_path}"
-    return 0
+  local staged_changes_no
+  staged_changes_no="$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')"
+  if [ "${staged_changes_no}" -gt 0 ]; then
+    changes_types_no=$((changes_types_no+1))
   fi
   
   # Check unstaged files
-  if [ "$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
-    pu_log_d "Repo $1 has unstaged changes"
-    cd "${orig_path}"
-    return 0
+  local unstaged_changes_no
+  unstaged_changes_no=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
+  if [ "${unstaged_changes_no}" -gt 0 ]; then
+    changes_types_no=$((changes_types_no+1))
   fi
   
   # Check untracked files
-  if [ "$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
-    pu_log_d "Repo $1 has untracked files"
-    cd "${orig_path}"
+  local untracked_files_no
+  untracked_files_no=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
+  if [ "${untracked_files_no}" -gt 0 ]; then
+    changes_types_no=$((changes_types_no+1))
+  fi
+
+  if [ ${changes_types_no} -gt 0 ]; then
+    pu_log_d "GG|32 Repo $1 has changes: Untracked files: ${untracked_files_no}, Unstaged changes: ${unstaged_changes_no}, Staged changes: ${staged_changes_no}"
+    cd "${orig_path}" || return 2
     return 0
   fi
-  
+
   # Check commits ahead/behind
   local upstream
   upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo '')"
@@ -210,17 +222,17 @@ _gg_repo_has_changes() {
     commits_behind="$(git rev-list --count HEAD.."$upstream" 2>/dev/null || echo '0')"
     if [ "${commits_behind}" -ne 0 ]; then
       pu_log_d "GG|32 Repo $1 is behind origin (${commits_behind})"
-      cd "${orig_path}"
+      cd "${orig_path}" || return 3
       return 0
     fi
     commits_ahead="$(git rev-list --count "$upstream"..HEAD 2>/dev/null || echo '0')"
     if [ "${commits_ahead}" -ne 0 ]; then
       pu_log_d "GG|32 Repo $1 is ahead of origin (${commits_ahead})"
-      cd "${orig_path}"
+      cd "${orig_path}" || return 4
       return 0
     fi
   fi
-  cd "${orig_path}"
+  cd "${orig_path}" || return 5
   return 1  # No changes detected
 }
 
@@ -257,6 +269,22 @@ _gg_repo_fetch_one() {
     cd "${orig_pwd}" || return 3
     return 1
   fi
+
+  if [ ! -f .git/hooks/pre-commit ]; then
+    if [ -f /usr/share/git-core/templates/hooks/pre-commit ]; then
+      pu_log_w "GG|34 No pre-commit hook found for $repo_path, correcting now..."
+      if ! git init ; then
+        pu_log_e "GG|34 Failed to init git repo for $repo_path"
+        cd "${orig_pwd}" || return 7
+        return 8
+      else
+        pu_log_i "GG|34 Pre-commit hook installed successfully for $repo_path"
+      fi
+    else
+      pu_log_w "GG|34 Template pre-commit hook not found, skipping auto-install"
+    fi
+  fi
+
   
   # Get current branch
   local current_branch
@@ -444,10 +472,10 @@ gg_repo_show_all_local_changes() {
     local header_line
     header_line=$(printf "%-${max_repo}s %-${max_branch}s %-8s %-8s %-8s %-10s %-10s %-10s %-12s\n" \
       "Repository" "Branch" "Behind" "Ahead" "Staged" "Unstaged" "Untracked" "Conflicts" "LastCommit")
-    pu_log_i "${header_line}"
+    pu_log_i "GG|37 ${header_line}"
     
     # Print separator line
-    local total_width=$((max_repo + max_branch + 8 + 8 + 8 + 10 + 10 + 10 + 12 + 7))
+    local total_width=$((max_repo + max_branch + 8 + 8 + 8 + 10 + 10 + 10 + 12 + 7 + 7 + 5))
     printf '%*s\n' "$total_width" '' | tr ' ' '-'
         
     # Print data rows
@@ -455,7 +483,7 @@ gg_repo_show_all_local_changes() {
       local data_line
       data_line=$(printf "%-${max_repo}s %-${max_branch}s %-8s %-8s %-8s %-10s %-10s %-10s %-12s\n" \
         "$repo" "$branch" "$behind" "$ahead" "$staged" "$unstaged" "$untracked" "$conflicts" "$lastcommit")
-      pu_log_i "${data_line}"
+      pu_log_i "GG|37 ${data_line}"
     done < "$report_tmpfile"
         
     # Print separator line

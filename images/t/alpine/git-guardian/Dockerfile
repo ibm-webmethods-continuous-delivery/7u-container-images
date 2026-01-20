@@ -13,9 +13,11 @@ ARG __pu_home="${__provided_assets_home}/util/PU_HOME"
 ENV \
     ENV="${__provided_assets_home}/.ashrc" \
     GG_PROVIDED_SCRIPTS_HOME="${__provided_assets_home}/util" \
+    GG_PROVIDED_CONFIG_HOME="${__provided_assets_home}/.config" \
     PS1='\u@\h:\w# ' \
     PU_HOME="${__pu_home}" \
-    PU_SOURCE_TAG="${__iwcd_pu_tag}"
+    PU_SOURCE_TAG="${__iwcd_pu_tag}" \
+    XDG_CONFIG_HOME="${__provided_assets_home}/.config"
 
 RUN mkdir -p "${PU_HOME}/code" "/usr/share/git-core/templates/hooks" \
     && chmod 755 /usr/share/git-core/templates/hooks \
@@ -25,6 +27,7 @@ RUN mkdir -p "${PU_HOME}/code" "/usr/share/git-core/templates/hooks" \
 
 COPY ./.ashrc "${__provided_assets_home}"/.ashrc
 COPY ./scripts/ "${__provided_assets_home}/util"/
+COPY ./config/ "${__provided_assets_home}/.config"/
 COPY ./scripts/pre-commit /usr/share/git-core/templates/hooks/pre-commit
 RUN chmod 755 /usr/share/git-core/templates/hooks/pre-commit \
     && git config --system init.templateDir /usr/share/git-core/templates
