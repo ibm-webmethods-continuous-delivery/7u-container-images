@@ -8,6 +8,7 @@ FROM ${__from_image}
 
 RUN microdnf -y update &&\
     microdnf -y install \
+      curl \
       findutils \
       gettext \
       gzip \
