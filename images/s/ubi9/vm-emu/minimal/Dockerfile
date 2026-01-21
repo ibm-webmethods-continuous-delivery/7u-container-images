@@ -6,9 +6,11 @@ FROM ${__from_image}
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# TODO: fix packages versions
+
 RUN microdnf -y update &&\
     microdnf -y install \
-      curl \
+      curl-minimal \
       findutils \
       gettext \
       gzip \

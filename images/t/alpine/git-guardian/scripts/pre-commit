@@ -19,7 +19,9 @@ __gg_pre_scan_errors=0
 
 printf "%bGG|PreCommit === Running Trivy Security Scan ===%b\n" "${YELLOW}" "${NC}"
 # Run Trivy scan, skipping .ssh directories
-if trivy --cache-dir /tmp/cache/trivy fs --skip-dirs "**/.git" . ; then
+# --exit-code 1: Exit with code 1 if vulnerabilities/secrets are found
+# --severity: Fail on MEDIUM and above for both vulnerabilities and secrets
+if trivy --cache-dir /tmp/cache/trivy fs --skip-dirs "**/.git" --exit-code 1 --severity MEDIUM,HIGH,CRITICAL . ; then
   printf "%b✅ Trivy scan passed! Proceeding with commit.%b\n" "${GREEN}" "${NC}"
 else
   printf "%b❌ Trivy scan failed!%b\n" "${RED}" "${NC}"
