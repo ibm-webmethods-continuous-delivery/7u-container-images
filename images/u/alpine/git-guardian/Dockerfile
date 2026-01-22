@@ -20,7 +20,8 @@ RUN addgroup -g ${__gid} ${__gname} \
       "${__gg_user_home}" \
       "${__gg_workspace_home}" \
     && adduser -u ${__uid} -G ${__gname} -D -h ${__gg_user_home} ${__uname} \
-    && chown -R ${__uid}:${__gid} "${__gg_workspace_home}" 
+    && rm -rf /tmp/* \
+    && chown -R ${__uid}:${__gid} "${__gg_workspace_home}" /tmp
 USER ${__uname}
 
 RUN git config --global --add safe.directory "${__gg_workspace_home}"
@@ -29,4 +30,7 @@ WORKDIR "${__gg_workspace_home}"
 
 VOLUME \
   "${__gg_user_home}" \
-  "${__gg_workspace_home}"
+  "${__gg_workspace_home}" \
+  /tmp
+
+# Note: as we are running with a read-only root FS, /tmp needs to have a special regimen and be mounted.
