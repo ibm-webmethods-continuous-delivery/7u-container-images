@@ -20,6 +20,16 @@ This container already provides a default toolset to work proficiently within th
 
 A set of containers dedicated to development, based on NeoVim for security and isolation purposes. Each flavor offers a consistent toolset for a given stack, for example developing Terraform modules for Azure, golang development, etc.
 
+### VM Emulator Series (vm-emu)
+
+A set of virtual machine emulator images based on UBI9, designed for testing webMethods installations on Linux. These images follow the three-tier layering strategy:
+
+- **S-tier** (`images/s/ubi9/vm-emu/minimal`): Minimal OS packages required for webMethods installation
+- **T-tier** (`images/t/ubi9/vm-emu-min-pu`): Adds framework's POSIX shell utilities for enhanced scripting capabilities
+- **U-tier** (`images/u/ubi9/vm-emu/minimal`): Adds non-root user configuration for secure testing
+
+Each tier builds upon the previous, creating a progressively more complete testing environment while maintaining minimal image size and clear separation of concerns.
+
 ### webMethods related images
 
 A set of images related to webMethods, like the database configuration tool, custom microservices runtimes, etc.

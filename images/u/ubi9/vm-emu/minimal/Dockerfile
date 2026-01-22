@@ -23,7 +23,7 @@ ARG __script_dir=/mnt/scripts
 
 ENV \
   IWCD_VM_EMU_AUDIT_BASE_DIR=${__audit_home_dir} \
-  IWCD_VM_EMU_INSTALL_INSTALL_DIR=${__install_dir} \
+  IWCD_VM_EMU_INSTALL_DIR=${__install_dir} \
   IWCD_VM_EMU_LOCAL_SCRIPTS_HOME=${__script_dir} \
   IWCD_VM_EMU_UPD_MGR_HOME=${__upd_mgr_home_dir} \
   IWCD_VM_EMU_USER_HOME=${__user_home}
