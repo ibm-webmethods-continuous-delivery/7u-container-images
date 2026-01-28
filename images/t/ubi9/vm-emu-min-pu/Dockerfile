@@ -1,7 +1,7 @@
 ARG __from_img=vm-emu-minimal-s:ubi9
 FROM ${__from_img}
 
-ARG __iwcd_pu_tag=v0.1.2
+ARG __iwcd_pu_tag=v0.1.3
 ARG __iwcd_pu_base_url=https://raw.githubusercontent.com/ibm-webmethods-continuous-delivery/2l-posix-shell-utils/refs/tags/${__iwcd_pu_tag}
 
 ARG __iwcd_pu_home=/opt/iwcd/pu
