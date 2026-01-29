@@ -3,8 +3,9 @@
 REM Copyright 2026 IBM Corporation
 REM SPDX-License-Identifier: Apache-2.0
 
-REM Check if the Docker image 'vm-emu-minimal-s:ubi9' exists
+echo Building image vm-emu-min-pu-t:ubi9 ...
 
+REM Check if the Docker image 'vm-emu-minimal-s:ubi9' exists
 docker image inspect vm-emu-minimal-s:ubi9 >nul 2>&1
 if errorlevel 1 (
     echo Image 'vm-emu-minimal-s:ubi9' not found. Building it first...
@@ -19,4 +20,8 @@ if errorlevel 1 (
     popd
 )
 
-docker buildx build -t vm-emu-min-pu-t:ubi9 .
+docker buildx build ^
+--no-cache ^
+-t vm-emu-min-pu-t:ubi9 .
+
+echo Built image vm-emu-min-pu-t:ubi9.

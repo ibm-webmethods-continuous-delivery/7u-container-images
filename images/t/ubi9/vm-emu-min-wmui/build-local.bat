@@ -19,4 +19,6 @@ if errorlevel 1 (
     popd
 )
 
-docker buildx build -t vm-emu-min-wmui-t:ubi9 .
+docker buildx build ^
+--no-cache ^
+-t vm-emu-min-wmui-t:ubi9 .
