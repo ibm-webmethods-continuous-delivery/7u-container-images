@@ -16,7 +16,7 @@ ARG __user_home=/home/${__user_name}
 # Usually for testing purposes we would declare these folders as volumes
 ARG __audit_home_dir=/var/webmethods/audit
 ARG __install_dir=/opt/webmethods
-ARG __upd_mgr_home_dir=/opt/wm-upd-mgr-v11
+ARG __upd_mgr_home_dir=/opt/wm-umgr
 
 # Intention is to mount the WMUI from development workspace here
 ARG __wmui_home_dir=/opt/iwcd/wmui
@@ -28,11 +28,11 @@ ARG __script_dir=/mnt/scripts
 
 ENV \
   IWCD_VM_EMU_ARTIFACTS_HOME=${__artifacts_home_dir} \
-  IWCD_VM_EMU_AUDIT_BASE_DIR=${__audit_home_dir} \
   IWCD_VM_EMU_INSTALL_DIR=${__install_dir} \
   IWCD_VM_EMU_LOCAL_SCRIPTS_HOME=${__script_dir} \
   IWCD_VM_EMU_UPD_MGR_HOME=${__upd_mgr_home_dir} \
   IWCD_VM_EMU_USER_HOME=${__user_home} \
+  PU_AUDIT_BASE_DIR=${__audit_home_dir} \
   WMUI_HOME=${__wmui_home_dir}
 
 RUN /usr/sbin/groupadd -r -g ${__group_id} ${__group_name} &&\

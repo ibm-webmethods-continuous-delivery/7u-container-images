@@ -20,7 +20,7 @@ RUN apk update --no-cache \
       shunit2 \
       yazi
 
-ARG __trivy_ver=v0.68.2
+ARG __trivy_ver=v0.69.0
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${__trivy_ver} /tmp/trivy-install.sh \
   && apk --no-cache upgrade
