@@ -1,0 +1,22 @@
+#!/bin/sh
+
+alias ll="ls -lah"
+
+# Source all files in ${PU_HOME}/code/ directory
+# to check: sourcing MUST occur in lexicographic order
+if [ -f "${PU_HOME}/code/1.init.sh" ]; then
+  # shellcheck disable=SC1091
+  . "${PU_HOME}/code/1.init.sh"
+fi
+
+if [ -f "${PU_HOME}/code/4.common.sh" ]; then
+  # shellcheck disable=SC1091
+  . "${PU_HOME}/code/4.common.sh"
+fi
+
+if [ ! -f "${CERT_MGR_SCRIPTS_HOME}/cert-mgmt-functions.sh" ]; then
+  pu_msg_fail_utf8 ".ashrc - Mandatory file missing: ${CERT_MGR_SCRIPTS_HOME}/cert-mgmt-functions.sh"
+else
+  # shellcheck disable=SC1091
+  . "${CERT_MGR_SCRIPTS_HOME}/cert-mgmt-functions.sh"
+fi
