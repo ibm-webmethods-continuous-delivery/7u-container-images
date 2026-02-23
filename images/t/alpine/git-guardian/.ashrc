@@ -20,7 +20,7 @@ alias configure-git='${GG_PROVIDED_SCRIPTS_HOME}/gitconfig.sh'
 if [ -d "${PU_HOME}/code" ]; then
   for script in "${PU_HOME}/code"/*; do
 
-    # we cannot determine the file names from this develpment point
+    # we cannot determine the file names from this development point
     # shellcheck source=/dev/null
     [ -f "$script" ] && . "$script"
   done
@@ -29,6 +29,7 @@ fi
 if [ ! -f "${GG_PROVIDED_SCRIPTS_HOME}/git-guardian-utils.sh" ]; then
   pu_msg_fail_utf8 ".ashrc - Mandatory file missing: ${GG_PROVIDED_SCRIPTS_HOME}/git-guardian-utils.sh"
 else
+  # shellcheck disable=SC1091
   . "${GG_PROVIDED_SCRIPTS_HOME}/git-guardian-utils.sh"
 fi
 
