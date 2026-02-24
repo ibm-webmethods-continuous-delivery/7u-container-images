@@ -1,0 +1,105 @@
+#!/bin/sh
+#
+# Copyright IBM Corp. 2026 - 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+# Utility function to ensure FTP user exists
+# This function can be called from U-tier entrypoint
+# Follows XDG Base Directory Specification
+
+# shellcheck disable=SC3043
+
+# Function 01 - consistently create a user to be used in ProFTPd test double server
+create_ftp_user(){
+  # Params
+  # $1 - user name
+  # $2 - user id
+  # $3 - user group name
+  # $4 - user group id
+  # $5 - OPTIONAL: password, default Manage01
+  # $6 - OPTIONAL: ProFTDPd virtual PASSWD users file, default /etc/proftpd/ftppasswd
+  # $7 - OPTIONAL: ProFTDPd virtual groups users file, default /etc/proftpd/fgroup
+
+  local _l_error_count=0
+
+  local _l_pass_hash
+  _l_pass_hash=$(openssl passwd -1 "${5:-Manage01}")
+
+  mkdir -p "/home/${1}/private" "/home/${1}/shared"
+
+  addgroup -g "${4}" "${3}" || _l_error_count=$((_l_error_count+1))
+  adduser  -D -u "${2}" -G "${3}" -H -s /sbin/nologin "${1}" || _l_error_count=$((_l_error_count+1))
+
+  chown -R "${1}":"${2}" "/home/${1}"
+  chmod 755  "/home/${1}/shared"
+  {
+    echo "This is ${1}'s shared folder"
+    echo "Other users can only read from here"
+  } > "/home/${1}/shared/README.txt"
+
+  printf \
+    "%s:%s:%s:%s:Virtual FTP User %s:/home/%s:/sbin/nologin\n" \
+    "${1}" "${_l_pass_hash}" \
+    "${2}" "${4}" "${1}" "${1}" >> "${6:-/etc/proftpd/ftppasswd}"
+
+  printf \
+    "%s:x:%s:%s\n" \
+    "${3}" "${4}" "${1}"  >> "${7:-/etc/proftpd/ftpgroup}"
+
+}
+
+# Function 02 - assure ssh host keys
+assure_ssh_host_keys() {
+  # Params
+  # $1 - key directory (default: ${HOME}/.ssh)
+  # Note, inside this, we expect two key files, not encrypted:
+  # ssh_host_rsa_key
+  # ssh_host_ed25519_key
+  local _l_sh_key_dir="${1:-${HOME}/.ssh}"
+
+  # Ensure directory exists
+  mkdir -p "${_l_sh_key_dir}"
+
+  # RSA
+    if [ ! -f "${_l_sh_key_dir}/ssh_host_rsa_key" ]; then
+      echo "[INFO] SSH host rsa key not found in ${_l_sh_key_dir}"
+      echo "[INFO] Generating SSH rsa host key..."
+
+      # Generate keys in the ssh config directory
+      ssh-keygen -t rsa -f "${_l_sh_key_dir}/ssh_host_rsa_key" -N "" -q
+
+      echo "[INFO] SSH host rsa key generated successfully"
+    else
+      echo "[INFO] SSH host rsa key already exist in ${_l_sh_key_dir}"
+    fi
+
+  # ed25519
+    if [ ! -f "${_l_sh_key_dir}/ssh_host_ed25519_key" ]; then
+      echo "[INFO] SSH host ed25519 key not found in ${_l_sh_key_dir}"
+      echo "[INFO] Generating SSH ed25519 host key..."
+
+      # Generate keys in the ssh config directory
+      ssh-keygen -t ed25519 -f "${_l_sh_key_dir}/ssh_host_ed25519_key" -N "" -q
+
+      echo "[INFO] SSH host ed25519 key generated successfully"
+    else
+      echo "[INFO] SSH host ed25519 key already exist in ${_l_sh_key_dir}"
+    fi
+
+}
+
+# Function 03 - assure server key and certificate
+assure_server_key_and_certificate(){
+  # Params
+  # $1 - certificate file
+  # $2 - private key file
+  if [ ! -f "${1}" ]; then
+    echo ">>> WARNING: server certificate does not exist!"
+    echo ">>> Generating self-signed TLS certificate …"
+    openssl req -new -x509 -days 3650 -nodes \
+                -out "${1}" \
+                -keyout "${2}" \
+                -subj "/CN=ft-test-double/O=test/C=XX"
+    chmod 600 "${2}"
+  fi
+}
