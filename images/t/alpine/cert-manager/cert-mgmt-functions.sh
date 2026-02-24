@@ -706,6 +706,50 @@ _cert_mgr_assure_full_chain_jks_keystore_for_subject(){
   return ${_l_error_count}
 }
 
+# Function 41 - Global trust store management
+_cert_mgr_add_subject_to_global_truststore(){
+  # Params
+  # $1 subjects folder name (full path, no trailing slashes)
+  # $2 subject folder name (no path, no slashes)
+  # $3 Key entry identifier
+
+  pu_log_i "CRTMGR|41| Adding subject ${1}/${2} to global trust store using key entry name ${3}"
+
+  local _l_error_count=0
+
+  # PEM
+    cat "${1}/${2}/out/rsa/public.pem.cer" >> "${1}/out/all_certs.pem"
+    cat "${1}/${2}/out/ed25519/public.pem.cer" >> "${1}/out/all_certs.pem"
+
+  # JKS - RSA
+    keytool -import \
+            -keystore "${1}/out/global.public.trust.store.jks" \
+            -file "${1}/${2}/out/rsa/public.pem.cer" \
+            -alias "${3}-rsa" \
+            -storepass "${__cert_mgr_default_truststore_password}" \
+            -noprompt
+    local _l_res_rsa=$?
+    if [ ${_l_res_rsa} -ne 0 ]; then
+      pu_log_e "CRTMGR|41| [ERROR] Failed to add subject ${1}/${2} to global trust store"
+      _l_error_count=$((_l_error_count+1))
+    fi
+
+  # JKS - ED25519
+    keytool -import \
+            -keystore "${1}/out/global.public.trust.store.jks" \
+            -file "${1}/${2}/out/ed25519/public.pem.cer" \
+            -alias "${3}-ed25519" \
+            -storepass "${__cert_mgr_default_truststore_password}" \
+            -noprompt
+    local _l_res_ed25519=$?
+    if [ ${_l_res_ed25519} -ne 0 ]; then
+      pu_log_e "CRTMGR|41| [ERROR] Failed to add subject ${1}/${2} to global trust store"
+      _l_error_count=$((_l_error_count+1))
+    fi
+
+  return $_l_error_count
+}
+
 #### Public functions 51+
 # Function 51 - Assures all artifacts for a subject are in place
 cert_mgr_manage_subject(){
@@ -764,8 +808,17 @@ cert_mgr_manage_subject(){
       || _l_error_count=$((_l_error_count+1))
   fi
 
+  _cert_mgr_add_subject_to_global_truststore \
+    "${1}" "${2}" \
+    "${CRTMGR_KEY_STORE_ENTRY_NAME}" \
+    || _l_error_count=$((_l_error_count+1))
+
   # Important: ensure these variables do not re-enter for another subject
-  unset CRTMGR_PK_PASS CRTMGR_SUBJECT_TYPE CRTMGR_SIGNING_CA_SUBJECT_DIR
+  unset \
+    CRTMGR_KEY_STORE_ENTRY_NAME \
+    CRTMGR_PK_PASS \
+    CRTMGR_SIGNING_CA_SUBJECT_DIR \
+    CRTMGR_SUBJECT_TYPE
   if [ ${_l_error_count} -ne 0 ]; then
     pu_log_e "CRTMGR|52| Errors detected while managing subject ${1}/${2}!"
     return 1
@@ -783,14 +836,32 @@ cert_mgr_manage_all_subjects(){
     return 1
   fi
 
+  mkdir -p "${1}/out"
+  rm \
+    "${1}/out/all_certs.pem" \
+    "${1}/out/global.public.trust.store.jks" \
+    "${1}/out/global.public.trust.store.p12" || true
+
   local l_crt_pwd
   l_crt_pwd=$(pwd)
   cd "${1}" || return 2
   local _l_subject_folder
   for _l_subject_folder in *; do
     [ -e "${_l_subject_folder}" ] || break # In case there is no subfolder or file, exit the loop
-    [ -d "${_l_subject_folder}" ] && cert_mgr_manage_subject "${1}" "${_l_subject_folder}"
+    [ -d "${_l_subject_folder}" ] && \
+    [ "${_l_subject_folder}" != "out" ] && \
+    cert_mgr_manage_subject "${1}" "${_l_subject_folder}"
   done
+
+  # PKCS12 - from JKS; openssl does not seem to have an append command
+    keytool -importkeystore \
+        -srckeystore "${1}/out/global.public.trust.store.jks" \
+        -srcstoretype JKS \
+        -srcstorepass "${__cert_mgr_default_truststore_password}" \
+        -destkeystore "${1}/out/global.public.trust.store.p12" \
+        -deststoretype PKCS12 \
+        -deststorepass "${__cert_mgr_default_truststore_password}"
+
 
   cd "${l_crt_pwd}" || return 3
 }
