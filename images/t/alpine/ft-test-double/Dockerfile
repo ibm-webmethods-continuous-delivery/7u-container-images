@@ -21,5 +21,5 @@ RUN mkdir -p "${__provided_assets_home}/scripts"
 
 COPY ./scripts/ "${__provided_assets_home}/scripts"/
 
-# Make all scripts executable
+# Make all scripts readable (not executable - they are sourced)
 RUN chmod -R a+r "${__provided_assets_home}"
