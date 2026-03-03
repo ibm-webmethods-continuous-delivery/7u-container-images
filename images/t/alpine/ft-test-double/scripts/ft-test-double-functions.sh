@@ -20,6 +20,13 @@ create_ftp_user(){
   # $6 - OPTIONAL: ProFTDPd virtual PASSWD users file, default /etc/proftpd/ftppasswd
   # $7 - OPTIONAL: ProFTDPd virtual groups users file, default /etc/proftpd/fgroup
 
+  if [ "${FTD_DISABLE_SECURITY_DEFAULTS}" = 'true' ]; then
+    if [ -z ${5+x} ]; then
+      echo "[FATAL] user password MUST be provided!"
+      return 1
+    fi
+  fi
+
   local _l_error_count=0
 
   local _l_pass_hash
@@ -49,41 +56,43 @@ create_ftp_user(){
 }
 
 # Function 02 - assure ssh host keys
-assure_ssh_host_keys() {
+assure_ssh_host_key() {
   # Params
   # $1 - key directory (default: ${HOME}/.ssh)
+  # $2 - key file name (default: ftpd_id_25519)
   # Note, inside this, we expect two key files, not encrypted:
   # ssh_host_rsa_key
   # ssh_host_ed25519_key
-  local _l_sh_key_dir="${1:-${HOME}/.ssh}"
+
+  if [ "${FTD_DISABLE_SECURITY_DEFAULTS}" = 'true' ]; then
+    local _l_error_count=0
+    if [ ! -d "${1}" ]; then
+      echo "[FATAL] Mandatory server ssh key folder ${1} missing!"
+      return 1
+    else
+      if [ ! -f "${1}/${2}" ]; then
+        echo "[FATAL] Mandatory server ssh key file ${1}/${2} missing!"
+        return 2
+      fi
+    fi
+  fi
+
+  local _l_ssh_key_dir _l_ssh_key_file
+  _l_ssh_key_dir="${1:-${HOME}/.ssh}"
+  _l_ssh_key_file="${2:-ftpd_id_25519}"
 
   # Ensure directory exists
-  mkdir -p "${_l_sh_key_dir}"
+  mkdir -p "${_l_ssh_key_dir}"
 
-  # RSA
-    if [ ! -f "${_l_sh_key_dir}/ssh_host_rsa_key" ]; then
-      echo "[INFO] SSH host rsa key not found in ${_l_sh_key_dir}"
-      echo "[INFO] Generating SSH rsa host key..."
-
-      # Generate keys in the ssh config directory
-      ssh-keygen -t rsa -f "${_l_sh_key_dir}/ssh_host_rsa_key" -N "" -q
-
-      echo "[INFO] SSH host rsa key generated successfully"
-    else
-      echo "[INFO] SSH host rsa key already exist in ${_l_sh_key_dir}"
-    fi
-
-  # ed25519
-    if [ ! -f "${_l_sh_key_dir}/ssh_host_ed25519_key" ]; then
-      echo "[INFO] SSH host ed25519 key not found in ${_l_sh_key_dir}"
+  # default is post quantum ed25519
+    if [ ! -f "${_l_ssh_key_dir}/${_l_ssh_key_file}" ]; then
+      echo "[INFO] SSH host key not found in ${_l_ssh_key_dir}/${_l_ssh_key_dir}"
       echo "[INFO] Generating SSH ed25519 host key..."
 
       # Generate keys in the ssh config directory
-      ssh-keygen -t ed25519 -f "${_l_sh_key_dir}/ssh_host_ed25519_key" -N "" -q
+      ssh-keygen -t ed25519 -f "${_l_ssh_key_dir}/${_l_ssh_key_file}" -N "" -q
 
       echo "[INFO] SSH host ed25519 key generated successfully"
-    else
-      echo "[INFO] SSH host ed25519 key already exist in ${_l_sh_key_dir}"
     fi
 
 }
@@ -93,6 +102,23 @@ assure_server_key_and_certificate(){
   # Params
   # $1 - certificate file
   # $2 - private key file
+
+  if [ "${FTD_DISABLE_SECURITY_DEFAULTS}" = 'true' ]; then
+    local _l_error_count=0
+    if [ ! -f "${1}" ]; then
+      echo "[FATAL] Mandatory certificate file ${1} does not exist"
+      _l_error_count=$((_l_error_count + 1))
+    fi
+    if [ ! -f "${2}" ]; then
+      echo "[FATAL] Mandatory private key file ${2} does not exist"
+      _l_error_count=$((_l_error_count + 1))
+    fi
+
+    if [ ${_l_error_count} -ne 0 ]; then
+      return 1
+    fi
+  fi
+
   if [ ! -f "${1}" ]; then
     echo ">>> WARNING: server certificate does not exist!"
     echo ">>> Generating self-signed TLS certificate …"

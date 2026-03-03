@@ -9,7 +9,7 @@ FROM ${__base_image}
 # ProFTPd user (for running the server)
 ARG __ftpd_user_id=1001
 ARG __ftpd_user_name=ftpd
-ARG __ftpd_group_gid=2001
+ARG __ftpd_group_gid=1001
 ARG __ftpd_group_name=ftpdgrp
 
 # Test users (for file transfer operations)
@@ -23,7 +23,7 @@ ARG __ft_test_user02_uid=2002
 ARG __ft_test_user02_name=ftuser02
 ARG __ft_test_group02_gid=2002
 ARG __ft_test_group02_name=ftuser02grp
-ARG __ft_test_user02_pass=Manage02
+ARG __ft_test_user02_pass=Manage01
 
 ARG __ftpd_config_folder=/etc/proftpd
 ARG __ftpd_config_file=${__ftpd_config_folder}/proftpd.conf
@@ -44,10 +44,6 @@ RUN mkdir -p \
     && adduser -D -u "${__ftpd_user_id}" \
       -G "${__ftpd_group_name}" -H -s /sbin/nologin \
       "${__ftpd_user_name}" \
-    && assure_server_key_and_certificate \
-      "${__ftpd_ssl_config_folder}/server.cer" \
-      "${__ftpd_ssl_config_folder}/server.key" \
-    && assure_ssh_host_keys "${__ftpd_ssh_config_folder}" \
     && create_ftp_user \
       "${__ft_test_user01_name}" \
       "${__ft_test_user01_uid}" \
@@ -60,7 +56,7 @@ RUN mkdir -p \
       "${__ft_test_group02_name}" \
       "${__ft_test_group02_gid}" \
       "${__ft_test_user02_pass}" \
-    chown -R "${__ftpd_user_id}":"${__ftpd_group_gid}" \
+    && chown -R "${__ftpd_user_id}":"${__ftpd_group_gid}" \
       "${__ftpd_config_folder}" "${__ftpd_log_folder}"
 
 VOLUME \
@@ -69,4 +65,4 @@ VOLUME \
       "${__ftpd_ssh_config_folder}" \
       "${__ftpd_ssl_config_folder}"
 
-ENTRYPOINT exec proftpd --nodaemon --config ${__ftpd_config_file}
+ENTRYPOINT ["exec", "proftpd", "--nodaemon", "--config", "${__ftpd_config_file}"]

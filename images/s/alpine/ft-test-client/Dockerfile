@@ -16,15 +16,5 @@ RUN apk update --no-cache \
         netcat-openbsd \
         openssh-client \
         openssl \
-        sshpass \
-        shunit2
-
-# Create test directories
-RUN mkdir -p \
-    /results \
-    /tests
-
-WORKDIR /tests
-
-# Default command
-CMD ["/bin/sh"]
+        shunit2 \
+        sshpass

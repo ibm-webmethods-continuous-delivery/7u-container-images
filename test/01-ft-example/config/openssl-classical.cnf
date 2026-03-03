@@ -1,0 +1,26 @@
+#
+# OpenSSL Configuration - Classical (Pre-Quantum) Mode
+# Copyright IBM Corp. 2026 - 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+# This configuration uses only classical cryptographic algorithms
+# (RSA, ECDSA, ECDHE) without post-quantum protection.
+#
+# Usage: Set environment variable OPENSSL_CONF=/path/to/this/file
+#
+
+openssl_conf = openssl_init
+
+[openssl_init]
+providers = provider_sect
+
+[provider_sect]
+default = default_sect
+
+[default_sect]
+activate = 1
+
+# Classical algorithms only:
+# - RSA for authentication
+# - ECDHE (X25519, P-256, P-384) for key exchange
+# - AES-GCM for symmetric encryption

@@ -9,10 +9,12 @@ FROM ${__base_image}
 # Provided assets home - where our utility scripts live
 ARG __provided_assets_home=/opt/ft-test-double
 
+
 # XDG Base Directory Specification for non-root containers
 # These are relative to the user's home directory and will be set in U-tier
 # T-tier provides the defaults that U-tier will use
 ENV \
+    FTD_DISABLE_SECURITY_DEFAULTS='true' \
     FTD_PROVIDED_SCRIPTS_HOME="${__provided_assets_home}/scripts" \
     PS1='\u@\h:\w# '
 

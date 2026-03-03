@@ -5,11 +5,13 @@ FROM alpine:${__alpine_tag}
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# Install FTP/FTPS/SFTP server packages
+# Install certificate management packages
 # Principle: Minimum dependencies for lower maintenance and running costs
+# openssh is included to provide ssh-keygen for SSH key pair generation
 RUN apk update --no-cache \
     && apk upgrade --no-cache \
     && apk add --no-cache \
         curl \
         openjdk25 \
-        openssl
+        openssl \
+        openssh

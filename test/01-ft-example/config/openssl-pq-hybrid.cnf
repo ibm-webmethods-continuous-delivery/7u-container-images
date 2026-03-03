@@ -1,0 +1,44 @@
+#
+# OpenSSL Configuration - Post-Quantum Hybrid Mode
+# Copyright IBM Corp. 2026 - 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+# This configuration enables post-quantum cryptography using the OQS provider
+# in HYBRID mode, combining classical and post-quantum algorithms for maximum
+# compatibility and security.
+#
+# Hybrid algorithms provide security if EITHER the classical OR the post-quantum
+# algorithm remains secure, making them ideal for transition periods.
+#
+# Usage: Set environment variable OPENSSL_CONF=/path/to/this/file
+#
+
+openssl_conf = openssl_init
+
+[openssl_init]
+providers = provider_sect
+
+[provider_sect]
+default = default_sect
+oqsprovider = oqsprovider_sect
+
+[default_sect]
+activate = 1
+
+[oqsprovider_sect]
+module = /usr/lib/ossl-modules/oqsprovider.so
+activate = 1
+
+# Hybrid mode enables both classical and post-quantum algorithms:
+#
+# Key Exchange (KEM):
+# - x25519_kyber768 (X25519 + ML-KEM-768) - RECOMMENDED
+# - p256_kyber768 (P-256 + ML-KEM-768)
+# - Classical: X25519, P-256, P-384
+#
+# Authentication (Signatures):
+# - RSA, ECDSA, ED25519 (classical)
+# - ed25519_dilithium2 (ED25519 + ML-DSA-44) - if supported
+#
+# The TLS handshake will negotiate the best available algorithm
+# supported by both client and server.
