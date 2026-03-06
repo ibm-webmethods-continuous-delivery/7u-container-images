@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# shellcheck source-path=SCRIPTDIR/scripts
+
+# User aliases and environment
+alias ll="ls -lah"
+
+
+# Source all files in ${PU_HOME}/code/ directory
+# to check: sourcing MUST occur in lexicographic order
+if [ -d "${PU_HOME}/code" ]; then
+  for script in "${PU_HOME}/code"/*; do
+
+    # we cannot determine the file names from this development point
+    # shellcheck source=/dev/null
+    [ -f "$script" ] && . "$script"
+  done
+fi
+
+if [ ! -d "${IWCD_AIO_PROVIDED_SCRIPTS_HOME}" ]; then
+  pu_msg_fail_utf8 "folder specified in the env var IWCD_AIO_PROVIDED_SCRIPTS_HOME (${IWCD_AIO_PROVIDED_SCRIPTS_HOME}) does not exist!"
+else
+  if [ ! -f "${IWCD_AIO_PROVIDED_SCRIPTS_HOME}/iwcd-aio-utils.sh" ]; then
+    pu_msg_fail_utf8 ".ashrc - Mandatory file missing: ${IWCD_AIO_PROVIDED_SCRIPTS_HOME}/iwcd-aio-utils.sh"
+  else
+    # shellcheck disable=SC1091
+    . "${IWCD_AIO_PROVIDED_SCRIPTS_HOME}/iwcd-aio-utils.sh"
+  fi
+fi

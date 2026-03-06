@@ -16,7 +16,7 @@ services:
   # other service starts.
   # ═══════════════════════════════════════════════════════════════════════════
   cert-manager:
-    image: cert-manager-u:alpine
+    image: iwcd-cert-manager-u:alpine
     container_name: ft-test-cert-manager
     volumes:
       - ./data/subjects:/mnt/data/certmgr
@@ -51,7 +51,7 @@ services:
   # Ports: 2121 (FTP/FTPES), 2990 (FTPS implicit), 2222 (SFTP)
   # ═══════════════════════════════════════════════════════════════════════════
   ft-test-double-classical:
-    image: ft-test-double-u:alpine
+    image: iwcd-ft-test-double-u:alpine
     container_name: ft-test-double-classical
     depends_on:
       cert-manager:
@@ -100,7 +100,7 @@ services:
   # Ports: 3121 (FTP/FTPES), 3990 (FTPS implicit), 3222 (SFTP)
   # ═══════════════════════════════════════════════════════════════════════════
   ft-test-double-pq-hybrid:
-    image: ft-test-double-u:alpine
+    image: iwcd-ft-test-double-u:alpine
     container_name: ft-test-double-pq-hybrid
     depends_on:
       cert-manager:
@@ -147,7 +147,7 @@ services:
   # One service instance; the run-scenarios.sh script iterates all combos.
   # ═══════════════════════════════════════════════════════════════════════════
   ft-test-client:
-    image: ft-test-client-u:alpine
+    image: iwcd-ft-test-client-u:alpine
     container_name: ft-test-client
     depends_on:
       cert-manager:

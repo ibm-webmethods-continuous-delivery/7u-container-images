@@ -2,17 +2,17 @@
 
 REM SPDX-License-Identifier: Apache-2.0
 
-echo Building image vm-emu-min-pu-u:ubi9 ...
+echo Building image iwcd-vm-emu-min-pu-u:ubi9 ...
 
-REM Check if the Docker image 'vm-emu-min-pu-t:ubi9' exists
-docker image inspect vm-emu-min-pu-t:ubi9 >nul 2>&1
+REM Check if the Docker image 'iwcd-vm-emu-min-pu-t:ubi9' exists
+docker image inspect iwcd-vm-emu-min-pu-t:ubi9 >nul 2>&1
 if errorlevel 1 (
-    echo Image 'vm-emu-min-pu-t:ubi9' not found. Building it first...
+    echo Image 'iwcd-vm-emu-min-pu-t:ubi9' not found. Building it first...
     pushd .
-    cd ..\..\..\..\t\ubi9\vm-emu-min-pu
+    cd ..\..\..\..\t\ubi9\iwcd-vm-emu-min-pu
     call build-local.bat
     if errorlevel 1 (
-        echo Failed to build 'vm-emu-min-pu-t:ubi9' image.
+        echo Failed to build 'iwcd-vm-emu-min-pu-t:ubi9' image.
         popd
         exit /b 1
     )
@@ -20,8 +20,8 @@ if errorlevel 1 (
 )
 
 docker buildx build ^
---build-arg "__from_image=vm-emu-min-pu-t:ubi9" ^
+--build-arg "__from_image=iwcd-vm-emu-min-pu-t:ubi9" ^
 --no-cache ^
--t vm-emu-min-pu-u:ubi9 .
+-t iwcd-vm-emu-min-pu-u:ubi9 .
 
-echo Built image vm-emu-min-pu-u:ubi9.
+echo Built image iwcd-vm-emu-min-pu-u:ubi9.

@@ -1,4 +1,4 @@
-ARG __base_image=ft-test-double-t:alpine
+ARG __base_image=iwcd-ft-test-double-t:alpine
 FROM ${__base_image}
 
 #
@@ -39,7 +39,7 @@ RUN mkdir -p \
       "${__ftpd_ssl_config_folder}" \
       "${__ftpd_log_folder}" \
     && touch "${__ftpd_config_file}" \
-    && . ${FTD_PROVIDED_SCRIPTS_HOME}/ft-test-double-functions.sh \
+    && . "${FTD_PROVIDED_SCRIPTS_HOME}"/ft-test-double-functions.sh \
     && addgroup -g "${__ftpd_group_gid}" "${__ftpd_group_name}" \
     && adduser -D -u "${__ftpd_user_id}" \
       -G "${__ftpd_group_name}" -H -s /sbin/nologin \

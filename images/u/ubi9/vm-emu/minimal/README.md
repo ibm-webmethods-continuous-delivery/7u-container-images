@@ -33,7 +33,7 @@ The following directories are declared as volumes and owned by the `webmethods` 
 This image is designed to be used with bind mounts for the scripts directory:
 
 ```bash
-docker run -v /path/to/scripts:/mnt/scripts vm-emu-minimal-u:ubi9
+docker run -v /path/to/scripts:/mnt/scripts iwcd-vm-emu-minimal-u:ubi9
 ```
 
 All volumes are pre-created and owned by the `webmethods` user (UID 1001), ensuring proper permissions for non-root execution.

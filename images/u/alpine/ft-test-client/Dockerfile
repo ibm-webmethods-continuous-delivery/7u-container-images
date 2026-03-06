@@ -1,4 +1,4 @@
-ARG __base_image=ft-test-client-t:alpine
+ARG __base_image=iwcd-ft-test-client-t:alpine
 FROM ${__base_image}
 
 #

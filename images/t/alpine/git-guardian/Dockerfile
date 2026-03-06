@@ -1,4 +1,4 @@
-ARG __base_image=git-guardian-s:alpine
+ARG __base_image=iwcd-git-guardian-s:alpine
 FROM ${__base_image}
 
 # Dependency -> posix utils

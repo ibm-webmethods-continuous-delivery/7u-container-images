@@ -1,0 +1,17 @@
+services:
+  7u-ci-builder:
+    image: iwcd-7u-ci-builder:latest
+    build: ./build
+    volumes:
+      - ../../:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scan-results:/scan-results
+      - trivy-cache:/root/.cache/trivy
+    working_dir: /workspace/.sbx/7u-ci-builder
+    entrypoint: ["sh", "/workspace/.sbx/7u-ci-builder/build.sh"]
+    environment:
+      - BUILD_TARGET=${BUILD_TARGET:-all}
+      - ENABLE_SCAN=${ENABLE_SCAN:-false}
+
+volumes:
+  trivy-cache:

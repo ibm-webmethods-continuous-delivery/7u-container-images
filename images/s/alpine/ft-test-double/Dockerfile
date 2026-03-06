@@ -3,6 +3,8 @@ ARG __alpine_tag=3.23
 # Stage 1: Build OQS Provider for Post-Quantum Cryptography
 FROM alpine:${__alpine_tag} AS oqs-builder
 
+# We do not agree with this hadolint rule for Alpine or any other distro that only works with the latest version of a package.
+# hadolint ignore=DL3018
 RUN apk add --no-cache \
         build-base \
         cmake \

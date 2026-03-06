@@ -1,4 +1,4 @@
-ARG __base_image=git-guardian-t:alpine
+ARG __base_image=iwcd-git-guardian-t:alpine
 FROM ${__base_image}
 
 ARG __gid=1001

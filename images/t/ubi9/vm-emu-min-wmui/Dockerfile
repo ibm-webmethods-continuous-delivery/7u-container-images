@@ -1,4 +1,4 @@
-ARG __from_img=vm-emu-min-pu-t:ubi9
+ARG __from_img=iwcd-vm-emu-min-pu-t:ubi9
 FROM ${__from_img}
 
 ARG __iwcd_wmui_tag=v0.0.2

@@ -7,6 +7,8 @@ FROM alpine:${__alpine_tag}
 #
 
 # Install FTP/FTPS/SFTP client packages
+# We do not agree with this hadolint rule for Alpine or any other distro that only works with the latest version of a package.
+# hadolint ignore=DL3018
 RUN apk update --no-cache \
     && apk upgrade --no-cache \
     && apk add --no-cache \

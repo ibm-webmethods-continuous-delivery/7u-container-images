@@ -1,4 +1,4 @@
-ARG __from_image=vm-emu-minimal-t:ubi9
+ARG __from_image=iwcd-iwcd-vm-emu-minimal-t:ubi9
 FROM ${__from_image}
 
 #

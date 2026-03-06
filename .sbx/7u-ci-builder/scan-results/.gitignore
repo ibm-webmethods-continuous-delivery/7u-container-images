@@ -1,0 +1,5 @@
+# Ignore all scan results - these are build artifacts for Artifactory
+*
+# Keep this directory structure in git
+!.gitignore
+!.gitkeep

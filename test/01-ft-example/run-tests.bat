@@ -38,7 +38,7 @@ pushd .
 cd ..\..\images\t\alpine\ft-test-client
 call build-local.bat
 if errorlevel 1 (
-    echo [ERROR] Failed to build ft-test-client-t:alpine
+    echo [ERROR] Failed to build iwcd-ft-test-client-t:alpine
     popd
     pause
     exit /b 1
@@ -49,7 +49,7 @@ pushd .
 cd ..\..\images\u\alpine\cert-manager
 call build-local.bat
 if errorlevel 1 (
-    echo [ERROR] Failed to build cert-manager-u:alpine
+    echo [ERROR] Failed to build iwcd-cert-manager-u:alpine
     popd
     pause
     exit /b 1
@@ -60,7 +60,7 @@ pushd .
 cd ..\..\images\u\alpine\ft-test-double
 call build-local.bat
 if errorlevel 1 (
-    echo [ERROR] Failed to build ft-test-double-u:alpine
+    echo [ERROR] Failed to build iwcd-ft-test-double-u:alpine
     popd
     pause
     exit /b 1
@@ -71,7 +71,7 @@ pushd .
 cd ..\..\images\u\alpine\ft-test-client
 call build-local.bat
 if errorlevel 1 (
-    echo [ERROR] Failed to build ft-test-client-u:alpine
+    echo [ERROR] Failed to build iwcd-ft-test-client-u:alpine
     popd
     pause
     exit /b 1

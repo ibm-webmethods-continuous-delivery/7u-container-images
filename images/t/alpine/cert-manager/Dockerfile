@@ -1,4 +1,4 @@
-ARG __base_image=cert-manager-s:alpine
+ARG __base_image=iwcd-cert-manager-s:alpine
 FROM ${__base_image}
 
 #
