@@ -10,7 +10,7 @@
 pu_log_i "GG|-- Sourcing git guardian commands..."
 
 # Function 02
-gg_assure_user_email(){
+gg_assure_user_email() {
   if [ "${__gg_user_email}" = "dev@example.com" ]; then
     pu_log_w "GG|02 User email has not been passed in the environment, considering ${__gg_user_email}"
     # TODO: ask the user if this is ok and if not ask for the email
@@ -24,13 +24,13 @@ gg_assure_ssh_key() {
     pu_log_i "GG|03 Generating new ed25519 SSH key..."
     pu_log_w "GG|03 You will be prompted for a passphrase - use a strong one!"
     # Generate the key
-    if ssh-keygen -t ed25519 -C "${__gg_user_email}" -f "${__gg_ssh_key_file}" ; then
-    
+    if ssh-keygen -t ed25519 -C "${__gg_user_email}" -f "${__gg_ssh_key_file}"; then
+
       if [ ! -f "${__gg_ssh_key_file}.pub" ]; then
         pu_log_w "GG|03 Public key ${__gg_ssh_key_file}.pub not found after execution of command, maybe it was interrupted?"
         return 1
       else
-        pu_log_i "GG|03 SSH key generated successfully: $(cat \"${__gg_ssh_key_file}.pub\")" 
+        pu_log_i "GG|03 SSH key generated successfully: $(cat \"${__gg_ssh_key_file}.pub\")"
       fi
     else
       pu_log_e "GG|03 ssh-keygen command failed! Code: $?"
@@ -45,28 +45,31 @@ gg_assure_ssh_key() {
 # Function 04
 gg_agent_start() {
   mkdir -p "${__gg_ssh_agent_dir}"
-  (umask 077; TMPDIR="${__gg_ssh_agent_dir}" ssh-agent 2>/dev/null | sed 's/^echo/#echo/' > "${__gg_ssh_agent_env}")
-  [ -f "${__gg_ssh_agent_env}" ] && . "${__gg_ssh_agent_env}" >/dev/null 2>&1
+  (
+    umask 077
+    TMPDIR="${__gg_ssh_agent_dir}" ssh-agent 2> /dev/null | sed 's/^echo/#echo/' > "${__gg_ssh_agent_env}"
+  )
+  [ -f "${__gg_ssh_agent_env}" ] && . "${__gg_ssh_agent_env}" > /dev/null 2>&1
 }
 
 # Function 05
 gg_assure_git_config() {
 
   __gg_assure_git_config_errors=0
-  if ! gg_assure_ssh_key ; then
+  if ! gg_assure_ssh_key; then
     pu_log_e "GG|05 You must have a working ssh key valid for signing before configuring git! Code $?"
-    __gg_assure_git_config_errors=$((__gg_assure_git_config_errors+1))
+    __gg_assure_git_config_errors=$((__gg_assure_git_config_errors + 1))
   fi
 
   # Validate inputs
   if [ -z "${GG_GIT_USER_NAME+x}" ]; then
     pu_log_e "GG|05 GG_GIT_USER_NAME environment variable must be set!"
-    __gg_assure_git_config_errors=$((__gg_assure_git_config_errors+1))
+    __gg_assure_git_config_errors=$((__gg_assure_git_config_errors + 1))
   fi
 
   if [ -z "${GG_USER_EMAIL+x}" ]; then
     pu_log_e "GG|05 GG_USER_EMAIL environment variable must be set"
-    __gg_assure_git_config_errors=$((__gg_assure_git_config_errors+1))
+    __gg_assure_git_config_errors=$((__gg_assure_git_config_errors + 1))
   fi
 
   if [ "${__gg_assure_git_config_errors}" -ne 0 ]; then
@@ -81,7 +84,7 @@ gg_assure_git_config() {
   local tmp_pub_key
   tmp_pub_key=$(cat "${__gg_ssh_key_file}.pub")
   echo "${GG_USER_EMAIL} ${tmp_pub_key})" > /dev/shm/ssh_allowed_signers
-  sort /dev/shm/ssh_allowed_signers | uniq  > "${HOME}/.ssh/allowed_signers"
+  sort /dev/shm/ssh_allowed_signers | uniq > "${HOME}/.ssh/allowed_signers"
   rm /dev/shm/ssh_allowed_signers
 
   git config --global commit.gpgsign true
@@ -129,46 +132,46 @@ _gg_repo_get_status() {
 
   local crt_pwd
   crt_pwd="$(pwd)"
-    
+
   cd "$repo_path" || return 1
-    
+
   local branch commits_behind commits_ahead staged unstaged untracked merge_conflicts
-    
-  branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
-  
+
+  branch="$(git rev-parse --abbrev-ref HEAD 2> /dev/null || echo 'unknown')"
+
   # Commits behind/ahead
   local upstream
-  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo '')"
+  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2> /dev/null || echo '')"
   if [ -n "$upstream" ]; then
-    commits_behind="$(git rev-list --count HEAD.."$upstream" 2>/dev/null || echo '0')"
-    commits_ahead="$(git rev-list --count "$upstream"..HEAD 2>/dev/null || echo '0')"
+    commits_behind="$(git rev-list --count HEAD.."$upstream" 2> /dev/null || echo '0')"
+    commits_ahead="$(git rev-list --count "$upstream"..HEAD 2> /dev/null || echo '0')"
   else
     commits_behind="-"
     commits_ahead="-"
   fi
-  
+
   # Staged files
-  staged="$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')"
-  
+  staged="$(git diff --cached --name-only 2> /dev/null | wc -l | tr -d ' ')"
+
   # Unstaged files
-  unstaged="$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')"
-  
+  unstaged="$(git diff --name-only 2> /dev/null | wc -l | tr -d ' ')"
+
   # Untracked files
-  untracked="$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')"
-  
+  untracked="$(git ls-files --others --exclude-standard 2> /dev/null | wc -l | tr -d ' ')"
+
   # Merge conflicts
   local conflict_count
-  conflict_count="$(git ls-files -u 2>/dev/null | wc -l | tr -d ' ')"
+  conflict_count="$(git ls-files -u 2> /dev/null | wc -l | tr -d ' ')"
   if [ "$conflict_count" -gt 0 ]; then
     merge_conflicts="yes"
   else
     merge_conflicts="no"
   fi
-  
+
   # Last commit date
   local last_commit
-  last_commit="$(git log -1 --format="%cd" --date=short 2>/dev/null || echo 'unknown')"
-  
+  last_commit="$(git log -1 --format="%cd" --date=short 2> /dev/null || echo 'unknown')"
+
   # Return status as CSV
   echo "$branch,$commits_behind,$commits_ahead,$staged,$unstaged,$untracked,$merge_conflicts,$last_commit"
 
@@ -189,23 +192,23 @@ _gg_repo_has_changes() {
 
   # Check staged files
   local staged_changes_no
-  staged_changes_no="$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')"
+  staged_changes_no="$(git diff --cached --name-only 2> /dev/null | wc -l | tr -d ' ')"
   if [ "${staged_changes_no}" -gt 0 ]; then
-    changes_types_no=$((changes_types_no+1))
+    changes_types_no=$((changes_types_no + 1))
   fi
-  
+
   # Check unstaged files
   local unstaged_changes_no
-  unstaged_changes_no=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
+  unstaged_changes_no=$(git diff --name-only 2> /dev/null | wc -l | tr -d ' ')
   if [ "${unstaged_changes_no}" -gt 0 ]; then
-    changes_types_no=$((changes_types_no+1))
+    changes_types_no=$((changes_types_no + 1))
   fi
-  
+
   # Check untracked files
   local untracked_files_no
-  untracked_files_no=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
+  untracked_files_no=$(git ls-files --others --exclude-standard 2> /dev/null | wc -l | tr -d ' ')
   if [ "${untracked_files_no}" -gt 0 ]; then
-    changes_types_no=$((changes_types_no+1))
+    changes_types_no=$((changes_types_no + 1))
   fi
 
   if [ ${changes_types_no} -gt 0 ]; then
@@ -216,16 +219,16 @@ _gg_repo_has_changes() {
 
   # Check commits ahead/behind
   local upstream
-  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo '')"
+  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2> /dev/null || echo '')"
   if [ -n "$upstream" ]; then
     local commits_behind commits_ahead
-    commits_behind="$(git rev-list --count HEAD.."$upstream" 2>/dev/null || echo '0')"
+    commits_behind="$(git rev-list --count HEAD.."$upstream" 2> /dev/null || echo '0')"
     if [ "${commits_behind}" -ne 0 ]; then
       pu_log_d "GG|32 Repo $1 is behind origin (${commits_behind})"
       cd "${orig_path}" || return 3
       return 0
     fi
-    commits_ahead="$(git rev-list --count "$upstream"..HEAD 2>/dev/null || echo '0')"
+    commits_ahead="$(git rev-list --count "$upstream"..HEAD 2> /dev/null || echo '0')"
     if [ "${commits_ahead}" -ne 0 ]; then
       pu_log_d "GG|32 Repo $1 is ahead of origin (${commits_ahead})"
       cd "${orig_path}" || return 4
@@ -233,15 +236,15 @@ _gg_repo_has_changes() {
     fi
   fi
   cd "${orig_path}" || return 5
-  return 1  # No changes detected
+  return 1 # No changes detected
 }
 
 # Function 33 - Find all git repositories under a base directory
 _gg_repo_find_all() {
   [ -d "${1}" ] || return 0
-  
+
   # Find all .git directories and return their parent paths
-  find "${1}" -name ".git" -type d 2>/dev/null | while read -r git_dir; do
+  find "${1}" -name ".git" -type d 2> /dev/null | while read -r git_dir; do
     dirname "$git_dir"
   done
 }
@@ -251,7 +254,7 @@ _gg_repo_find_all() {
 _gg_repo_fetch_one() {
   local repo_path="$1"
   local repo_name="${2:-$(basename "$repo_path")}"
-  
+
   if ! _gg_repo_is_git_repo "$repo_path"; then
     pu_log_e "GG|34 $repo_path is not a git repository"
     return 1
@@ -259,10 +262,10 @@ _gg_repo_fetch_one() {
 
   local orig_pwd
   orig_pwd="$(pwd)"
-  
+
   cd "$repo_path" || return 2
   pu_log_i "GG|34 Fetching $repo_path [url=$(git remote get-url --all origin)]..."
-  
+
   # Fetch all remotes
   if ! git fetch --all --prune 2>&1; then
     pu_log_e "GG|34 Failed to fetch $repo_path"
@@ -273,7 +276,7 @@ _gg_repo_fetch_one() {
   if [ ! -f .git/hooks/pre-commit ]; then
     if [ -f /usr/share/git-core/templates/hooks/pre-commit ]; then
       pu_log_w "GG|34 No pre-commit hook found for $repo_path, correcting now..."
-      if ! git init ; then
+      if ! git init; then
         pu_log_e "GG|34 Failed to init git repo for $repo_path"
         cd "${orig_pwd}" || return 7
         return 8
@@ -285,37 +288,36 @@ _gg_repo_fetch_one() {
     fi
   fi
 
-  
   # Get current branch
   local current_branch
-  current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
-  
+  current_branch="$(git rev-parse --abbrev-ref HEAD 2> /dev/null || echo 'unknown')"
+
   if [ "$current_branch" = "unknown" ] || [ -z "$current_branch" ]; then
     pu_log_w "GG|34 Could not determine current branch for $repo_path, skipping pull"
     cd "${orig_pwd}" || return 4
     return 0
   fi
-  
+
   # Check for local changes before attempting to pull
   local has_local_changes=0
-  if [ "$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
+  if [ "$(git diff --name-only 2> /dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
     has_local_changes=1
   else
-    if [ "$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
+    if [ "$(git diff --cached --name-only 2> /dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
       has_local_changes=1
     else
-      if [ "$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
+      if [ "$(git ls-files --others --exclude-standard 2> /dev/null | wc -l | tr -d ' ')" -gt 0 ]; then
         has_local_changes=1
       fi
     fi
   fi
-  
+
   if [ "$has_local_changes" -eq 1 ]; then
     pu_log_w "GG|34 $repo_path has uncommitted changes - skipping pull"
     cd "${orig_pwd}" || return 5
     return 0
   fi
-  
+
   # Update current branch if it has an upstream
   if git rev-parse --verify "@{upstream}" > /dev/null 2>&1; then
     pu_log_i "GG|34 Updating branch $current_branch in $repo_path..."
@@ -327,8 +329,8 @@ _gg_repo_fetch_one() {
   else
     pu_log_i "GG|34 No upstream configured for branch $current_branch in $repo_path"
   fi
-  
-  cd "${orig_pwd}"  || return 6
+
+  cd "${orig_pwd}" || return 6
 }
 
 # Function 35 - Clone or update repository from CSV entry
@@ -336,24 +338,24 @@ _gg_repo_clone_or_update() {
   local url="$1"
   local parent_dir="$2"
   local repo_name="$3"
-  
+
   local repo_path="${parent_dir}/${repo_name}"
-  
+
   pu_log_i "GG|35 Processing: $repo_path [url: ${url}]"
-  
+
   # Ensure parent directory exists
   if [ ! -d "$parent_dir" ]; then
     pu_log_i "GG|35 Creating parent directory: $parent_dir"
     mkdir -p "$parent_dir"
   fi
-  
+
   if [ -d "$repo_path" ]; then
     # Repository exists, fetch it
     _gg_repo_fetch_one "$repo_path" "$repo_name"
   else
     # Repository doesn't exist, clone it
     pu_log_i "GG|35 Cloning $repo_path from $url..."
-    
+
     if git clone "$url" "$parent_dir"/"$repo_name" 2>&1; then
       pu_log_i "GG|35 Successfully cloned $repo_path"
     else
@@ -366,7 +368,7 @@ _gg_repo_clone_or_update() {
 # Function 36 - Fetch all repositories
 gg_repo_fetch_all() {
   pu_log_i "GG|36 === Fetching All Repositories ==="
-    
+
   local total_processed=0
   local processed_repos_list_file=/dev/shm/processed_repos-$$.tmp
 
@@ -375,7 +377,7 @@ gg_repo_fetch_all() {
   # Process CSV if configured
   if [ -n "$__gg_managed_repos_csv" ] && [ -f "$__gg_managed_repos_csv" ]; then
     pu_log_i "GG|36 Processing managed repositories from CSV: $__gg_managed_repos_csv"
-    
+
     # Read CSV and process all repositories (format: url,path,name)
     tail -n +2 "$__gg_managed_repos_csv" > /dev/shm/fetch-repos-$$.tmp
     while IFS=',' read -r url parent_dir repo_name; do
@@ -383,7 +385,7 @@ gg_repo_fetch_all() {
       if [ -z "$url" ] || [ -z "$parent_dir" ] || [ -z "$repo_name" ]; then
         continue
       fi
-      
+
       # Process all repositories
       _gg_repo_clone_or_update "$url" "${__gg_this_repo_dir}/${parent_dir}" "${repo_name}"
       echo "${__gg_this_repo_dir}/${parent_dir}/${repo_name}" >> "${processed_repos_list_file}"
@@ -391,7 +393,7 @@ gg_repo_fetch_all() {
     done < /dev/shm/fetch-repos-$$.tmp
     rm -f /dev/shm/fetch-repos-$$.tmp
   fi
-    
+
   # Also fetch all existing repositories in the base directory
 
   pu_log_i "GG|36 Fetching remaining repositories in $__gg_this_repo_dir"
@@ -426,16 +428,16 @@ gg_repo_fetch_all() {
 # Function 37 - Show all repositories with local changes
 gg_repo_show_all_local_changes() {
   pu_log_i "GG|37 === Repositories With Local Changes ==="
-    
+
   local report_tmpfile="/dev/shm/repo-changes-$$.tmp"
   rm -f "$report_tmpfile"
-    
+
   # Check all repos in base directory (includes __gg_this_repo_dir if it's a git repo)
   _gg_repo_find_all "$__gg_this_repo_dir" | while read -r repo_path; do
     ## Assure that a dir is a repo
     if _gg_repo_is_git_repo "${repo_path}"; then
-      if ! git config --global --get-all safe.directory | grep -qx "${repo_path}"; then 
-        git config --global --add safe.directory "${repo_path}";
+      if ! git config --global --get-all safe.directory | grep -qx "${repo_path}"; then
+        git config --global --add safe.directory "${repo_path}"
       fi
       if _gg_repo_has_changes "$repo_path"; then
         local repo_name
@@ -454,7 +456,7 @@ gg_repo_show_all_local_changes() {
     local repo_count
     repo_count=$(wc -l < "$report_tmpfile")
     pu_log_i "GG|37 Found ${repo_count} repositories with changes:"
-    
+
     # Calculate dynamic column widths
     local max_repo=10 max_branch=6
     while IFS=',' read -r repo branch _rest; do
@@ -463,21 +465,21 @@ gg_repo_show_all_local_changes() {
       [ "$repo_len" -gt "$max_repo" ] && max_repo=$repo_len
       [ "$branch_len" -gt "$max_branch" ] && max_branch=$branch_len
     done < "$report_tmpfile"
-    
+
     # Add padding
     max_repo=$((max_repo + 2))
     max_branch=$((max_branch + 2))
-    
+
     # Print header
     local header_line
     header_line=$(printf "%-${max_repo}s %-${max_branch}s %-8s %-8s %-8s %-10s %-10s %-10s %-12s\n" \
       "Repository" "Branch" "Behind" "Ahead" "Staged" "Unstaged" "Untracked" "Conflicts" "LastCommit")
     pu_log_i "GG|37 ${header_line}"
-    
+
     # Print separator line
     local total_width=$((max_repo + max_branch + 8 + 8 + 8 + 10 + 10 + 10 + 12 + 7 + 7 + 5))
     printf '%*s\n' "$total_width" '' | tr ' ' '-'
-        
+
     # Print data rows
     while IFS=',' read -r repo branch behind ahead staged unstaged untracked conflicts lastcommit; do
       local data_line
@@ -485,23 +487,23 @@ gg_repo_show_all_local_changes() {
         "$repo" "$branch" "$behind" "$ahead" "$staged" "$unstaged" "$untracked" "$conflicts" "$lastcommit")
       pu_log_i "GG|37 ${data_line}"
     done < "$report_tmpfile"
-        
+
     # Print separator line
     printf '%*s\n' "$total_width" '' | tr ' ' '-'
   else
     pu_log_i "GG|37 No repositories with local changes."
   fi
-    
+
   rm -f "$report_tmpfile"
 }
 
 # Function 38 - List all known repositories
 gg_repo_list_all() {
   pu_log_i "GG|38 === All Known Repositories ==="
-    
+
   local count=0
   local tmpfile="/dev/shm/list-repos-$$.tmp"
-    
+
   # List all repos in base directory (includes __gg_this_repo_dir if it's a git repo)
   if [ -d "$__gg_this_repo_dir" ]; then
     _gg_repo_find_all "$__gg_this_repo_dir" > "$tmpfile"
@@ -521,11 +523,10 @@ alias fetch-all='gg_repo_fetch_all'
 alias show-all-local-changes='gg_repo_show_all_local_changes'
 alias list-all-repos='gg_repo_list_all'
 
-
 ########### Functions 9x - automatic initialization at source time
 
 # Function 90
-_gg_init(){
+_gg_init() {
   if [ -z "${GG_USER_EMAIL+x}" ]; then
     pu_log_w "GG|90 GG_USER_EMAIL env var not provided. Verify the container setup!"
   fi
@@ -542,7 +543,7 @@ _gg_init(){
   __gg_ssh_agent_env="${__gg_ssh_agent_dir}.env"
 
   # Assure we have an ssh agent
-  if ! ssh-add -l >/dev/null 2>&1; then
+  if ! ssh-add -l > /dev/null 2>&1; then
     # Agent not running or not accessible, start a new one
     gg_agent_start
   fi
@@ -553,7 +554,7 @@ _gg_init
 gg_agent_load_env() {
   # Not supposed to follow this, it is dynamically created
   # shellcheck source=/dev/null
-  [ -f "${__gg_ssh_agent_env}" ] && . "${__gg_ssh_agent_env}" >/dev/null 2>&1
+  [ -f "${__gg_ssh_agent_env}" ] && . "${__gg_ssh_agent_env}" > /dev/null 2>&1
 }
 gg_agent_load_env
 

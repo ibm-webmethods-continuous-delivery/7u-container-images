@@ -64,7 +64,7 @@ FTC_TRANSFER_MODE="${FTC_TRANSFER_MODE:-binary}"
 
 # Server connection parameters
 FTC_HOST="${FTC_HOST:-ft-test-double}"
-FTC_PORT="${FTC_PORT:-}"          # empty = protocol default
+FTC_PORT="${FTC_PORT:-}" # empty = protocol default
 
 # Primary user credentials
 FTC_USER="${FTC_USER:-ftuser01}"
@@ -101,11 +101,11 @@ _ftc_effective_port() {
     return
   fi
   case "${FTC_PROTOCOL}" in
-    ftp)           echo "21"  ;;
-    ftps)          echo "21"  ;;
+    ftp) echo "21" ;;
+    ftps) echo "21" ;;
     ftps-implicit) echo "990" ;;
-    sftp)          echo "22"  ;;
-    *)             echo "21"  ;;
+    sftp) echo "22" ;;
+    *) echo "21" ;;
   esac
 }
 
@@ -117,9 +117,9 @@ _ftc_ssh_identity_file() {
 # Build lftp transfer mode setting
 _ftc_lftp_mode_flag() {
   case "${FTC_TRANSFER_MODE}" in
-    text)   echo "set ftp:type ascii;" ;;
+    text) echo "set ftp:type ascii;" ;;
     binary) echo "set ftp:type binary;" ;;
-    *)      echo "set ftp:type binary;" ;;
+    *) echo "set ftp:type binary;" ;;
   esac
 }
 
@@ -174,7 +174,7 @@ ftc_check_port() {
   local _l_port="${2:-$(_ftc_effective_port)}"
 
   pu_log_i "FTC| Checking connectivity to ${_l_host}:${_l_port} ..."
-  if nc -z -w 5 "${_l_host}" "${_l_port}" 2>/dev/null; then
+  if nc -z -w 5 "${_l_host}" "${_l_port}" 2> /dev/null; then
     pu_log_i "FTC| Port ${_l_host}:${_l_port} is reachable."
     return 0
   else
@@ -195,7 +195,7 @@ ftc_prepare_random_file() {
   local _l_size="${2:-4096}"
 
   mkdir -p "$(dirname "${_l_dest}")"
-  dd if=/dev/urandom of="${_l_dest}" bs="${_l_size}" count=1 2>/dev/null
+  dd if=/dev/urandom of="${_l_dest}" bs="${_l_size}" count=1 2> /dev/null
   pu_log_i "FTC| Prepared random file: ${_l_dest} (${_l_size} bytes)"
 }
 
@@ -257,7 +257,7 @@ _ftc_audit_remote_sftp() {
       -o ConnectTimeout=10 \
       -i "${_l_identity}" \
       -P "${_l_port}" \
-      "${_l_user}@${_l_host}" <<EOF 2>&1 | while IFS= read -r _line; do pu_log_i "FTC|  remote> ${_line}"; done
+      "${_l_user}@${_l_host}" << EOF 2>&1 | while IFS= read -r _line; do pu_log_i "FTC|  remote> ${_line}"; done
 pwd
 ls ${_l_dir}
 bye
@@ -268,7 +268,7 @@ EOF
       -o UserKnownHostsFile=/dev/null \
       -o ConnectTimeout=10 \
       -P "${_l_port}" \
-      "${_l_user}@${_l_host}" <<EOF 2>&1 | while IFS= read -r _line; do pu_log_i "FTC|  remote> ${_line}"; done
+      "${_l_user}@${_l_host}" << EOF 2>&1 | while IFS= read -r _line; do pu_log_i "FTC|  remote> ${_line}"; done
 pwd
 ls ${_l_dir}
 bye
@@ -282,8 +282,8 @@ EOF
 # $3 - pass (optional)
 ftc_audit_remote_state() {
   case "${FTC_PROTOCOL}" in
-    ftp|ftps|ftps-implicit) _ftc_audit_remote_ftp  "${1}" "${2}" "${3}" ;;
-    sftp)                   _ftc_audit_remote_sftp "${1}" "${2}" "${3}" ;;
+    ftp | ftps | ftps-implicit) _ftc_audit_remote_ftp "${1}" "${2}" "${3}" ;;
+    sftp) _ftc_audit_remote_sftp "${1}" "${2}" "${3}" ;;
     *)
       pu_log_e "FTC| Unknown protocol: ${FTC_PROTOCOL}"
       return 1
@@ -348,14 +348,14 @@ _ftc_login_sftp() {
     _l_debug_output="$(mktemp /tmp/sftp-debug.XXXXXX)"
 
     if sftp -vvv \
-        -o StrictHostKeyChecking=no \
-        -o UserKnownHostsFile=/dev/null \
-        -o ConnectTimeout=10 \
-        -o BatchMode=yes \
-        -i "${_l_identity}" \
-        -P "${_l_port}" \
-        -b "${_l_batch}" \
-        "${_l_user}@${_l_host}" > "${_l_debug_output}" 2>&1; then
+      -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile=/dev/null \
+      -o ConnectTimeout=10 \
+      -o BatchMode=yes \
+      -i "${_l_identity}" \
+      -P "${_l_port}" \
+      -b "${_l_batch}" \
+      "${_l_user}@${_l_host}" > "${_l_debug_output}" 2>&1; then
       rm -f "${_l_batch}"
       pu_log_i "FTC| Login succeeded for ${_l_user} (key: ${FTC_KEY_TYPE})"
       pu_log_d "FTC| DEBUG: SFTP output (last 20 lines):"
@@ -378,12 +378,12 @@ _ftc_login_sftp() {
     _l_debug_output="$(mktemp /tmp/sftp-debug.XXXXXX)"
 
     if SSHPASS="${_l_pass}" sshpass -e sftp -vvv \
-        -o StrictHostKeyChecking=no \
-        -o UserKnownHostsFile=/dev/null \
-        -o ConnectTimeout=10 \
-        -P "${_l_port}" \
-        -b "${_l_batch}" \
-        "${_l_user}@${_l_host}" > "${_l_debug_output}" 2>&1; then
+      -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile=/dev/null \
+      -o ConnectTimeout=10 \
+      -P "${_l_port}" \
+      -b "${_l_batch}" \
+      "${_l_user}@${_l_host}" > "${_l_debug_output}" 2>&1; then
       rm -f "${_l_batch}"
       pu_log_i "FTC| Login succeeded for ${_l_user} (password auth)"
       pu_log_d "FTC| DEBUG: SFTP output (last 20 lines):"
@@ -405,8 +405,8 @@ _ftc_login_sftp() {
 # $1 - user (optional), $2 - pass (optional)
 ftc_login() {
   case "${FTC_PROTOCOL}" in
-    ftp|ftps|ftps-implicit) _ftc_login_ftp  "${1}" "${2}" ;;
-    sftp)                   _ftc_login_sftp "${1}" "${2}" ;;
+    ftp | ftps | ftps-implicit) _ftc_login_ftp "${1}" "${2}" ;;
+    sftp) _ftc_login_sftp "${1}" "${2}" ;;
     *)
       pu_log_e "FTC| Unknown protocol: ${FTC_PROTOCOL}"
       return 1
@@ -474,7 +474,7 @@ _ftc_put_sftp() {
       -o ConnectTimeout=10 \
       -i "${_l_identity}" \
       -P "${_l_port}" \
-      "${_l_user}@${_l_host}" <<EOF > /dev/null 2>&1
+      "${_l_user}@${_l_host}" << EOF > /dev/null 2>&1
 cd ${_l_remote_dir}
 put ${_l_local_file}
 bye
@@ -485,7 +485,7 @@ EOF
       -o UserKnownHostsFile=/dev/null \
       -o ConnectTimeout=10 \
       -P "${_l_port}" \
-      "${_l_user}@${_l_host}" <<EOF > /dev/null 2>&1
+      "${_l_user}@${_l_host}" << EOF > /dev/null 2>&1
 cd ${_l_remote_dir}
 put ${_l_local_file}
 bye
@@ -508,8 +508,8 @@ EOF
 # $3 - user (optional), $4 - pass (optional)
 ftc_put() {
   case "${FTC_PROTOCOL}" in
-    ftp|ftps|ftps-implicit) _ftc_put_ftp  "${1}" "${2}" "${3}" "${4}" ;;
-    sftp)                   _ftc_put_sftp "${1}" "${2}" "${3}" "${4}" ;;
+    ftp | ftps | ftps-implicit) _ftc_put_ftp "${1}" "${2}" "${3}" "${4}" ;;
+    sftp) _ftc_put_sftp "${1}" "${2}" "${3}" "${4}" ;;
     *)
       pu_log_e "FTC| Unknown protocol: ${FTC_PROTOCOL}"
       return 1
@@ -587,7 +587,7 @@ _ftc_get_sftp() {
       -o ConnectTimeout=10 \
       -i "${_l_identity}" \
       -P "${_l_port}" \
-      "${_l_user}@${_l_host}" <<EOF > /dev/null 2>&1
+      "${_l_user}@${_l_host}" << EOF > /dev/null 2>&1
 lcd ${_l_local_dir}
 get ${_l_remote_file} ${_l_local_name}
 bye
@@ -598,7 +598,7 @@ EOF
       -o UserKnownHostsFile=/dev/null \
       -o ConnectTimeout=10 \
       -P "${_l_port}" \
-      "${_l_user}@${_l_host}" <<EOF > /dev/null 2>&1
+      "${_l_user}@${_l_host}" << EOF > /dev/null 2>&1
 lcd ${_l_local_dir}
 get ${_l_remote_file} ${_l_local_name}
 bye
@@ -621,8 +621,8 @@ EOF
 # $3 - user (optional), $4 - pass (optional)
 ftc_get() {
   case "${FTC_PROTOCOL}" in
-    ftp|ftps|ftps-implicit) _ftc_get_ftp  "${1}" "${2}" "${3}" "${4}" ;;
-    sftp)                   _ftc_get_sftp "${1}" "${2}" "${3}" "${4}" ;;
+    ftp | ftps | ftps-implicit) _ftc_get_ftp "${1}" "${2}" "${3}" "${4}" ;;
+    sftp) _ftc_get_sftp "${1}" "${2}" "${3}" "${4}" ;;
     *)
       pu_log_e "FTC| Unknown protocol: ${FTC_PROTOCOL}"
       return 1

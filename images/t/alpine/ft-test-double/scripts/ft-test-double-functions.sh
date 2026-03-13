@@ -10,7 +10,7 @@
 # shellcheck disable=SC3043
 
 # Function 01 - consistently create a user to be used in ProFTPd test double server
-create_ftp_user(){
+create_ftp_user() {
   # Params
   # $1 - user name
   # $2 - user id
@@ -34,11 +34,11 @@ create_ftp_user(){
 
   mkdir -p "/home/${1}/private" "/home/${1}/shared"
 
-  addgroup -g "${4}" "${3}" || _l_error_count=$((_l_error_count+1))
-  adduser  -D -u "${2}" -G "${3}" -H -s /sbin/nologin "${1}" || _l_error_count=$((_l_error_count+1))
+  addgroup -g "${4}" "${3}" || _l_error_count=$((_l_error_count + 1))
+  adduser -D -u "${2}" -G "${3}" -H -s /sbin/nologin "${1}" || _l_error_count=$((_l_error_count + 1))
 
   chown -R "${1}":"${2}" "/home/${1}"
-  chmod 755  "/home/${1}/shared"
+  chmod 755 "/home/${1}/shared"
   {
     echo "This is ${1}'s shared folder"
     echo "Other users can only read from here"
@@ -51,7 +51,7 @@ create_ftp_user(){
 
   printf \
     "%s:x:%s:%s\n" \
-    "${3}" "${4}" "${1}"  >> "${7:-/etc/proftpd/ftpgroup}"
+    "${3}" "${4}" "${1}" >> "${7:-/etc/proftpd/ftpgroup}"
 
 }
 
@@ -85,20 +85,20 @@ assure_ssh_host_key() {
   mkdir -p "${_l_ssh_key_dir}"
 
   # default is post quantum ed25519
-    if [ ! -f "${_l_ssh_key_dir}/${_l_ssh_key_file}" ]; then
-      echo "[INFO] SSH host key not found in ${_l_ssh_key_dir}/${_l_ssh_key_dir}"
-      echo "[INFO] Generating SSH ed25519 host key..."
+  if [ ! -f "${_l_ssh_key_dir}/${_l_ssh_key_file}" ]; then
+    echo "[INFO] SSH host key not found in ${_l_ssh_key_dir}/${_l_ssh_key_dir}"
+    echo "[INFO] Generating SSH ed25519 host key..."
 
-      # Generate keys in the ssh config directory
-      ssh-keygen -t ed25519 -f "${_l_ssh_key_dir}/${_l_ssh_key_file}" -N "" -q
+    # Generate keys in the ssh config directory
+    ssh-keygen -t ed25519 -f "${_l_ssh_key_dir}/${_l_ssh_key_file}" -N "" -q
 
-      echo "[INFO] SSH host ed25519 key generated successfully"
-    fi
+    echo "[INFO] SSH host ed25519 key generated successfully"
+  fi
 
 }
 
 # Function 03 - assure server key and certificate
-assure_server_key_and_certificate(){
+assure_server_key_and_certificate() {
   # Params
   # $1 - certificate file
   # $2 - private key file
@@ -123,9 +123,9 @@ assure_server_key_and_certificate(){
     echo ">>> WARNING: server certificate does not exist!"
     echo ">>> Generating self-signed TLS certificate …"
     openssl req -new -x509 -days 3650 -nodes \
-                -out "${1}" \
-                -keyout "${2}" \
-                -subj "/CN=ft-test-double/O=test/C=XX"
+      -out "${1}" \
+      -keyout "${2}" \
+      -subj "/CN=ft-test-double/O=test/C=XX"
     chmod 600 "${2}"
   fi
 }

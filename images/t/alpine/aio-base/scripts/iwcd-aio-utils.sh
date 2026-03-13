@@ -9,6 +9,6 @@
 
 pu_log_i "IWCD|AIO|-- Sourcing IWCD AI Overwatcher commands..."
 
-iwcd_aio_test(){
+iwcd_aio_test() {
   pu_log_i "IWCD|AIO|-- Test function called"
 }
