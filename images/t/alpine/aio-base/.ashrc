@@ -5,16 +5,16 @@
 # User aliases and environment
 alias ll="ls -lah"
 
-
-# Source all files in ${PU_HOME}/code/ directory
-# to check: sourcing MUST occur in lexicographic order
-if [ -d "${PU_HOME}/code" ]; then
-  for script in "${PU_HOME}/code"/*; do
-
-    # we cannot determine the file names from this development point
-    # shellcheck source=/dev/null
-    [ -f "$script" ] && . "$script"
-  done
+# Source the packaged Posix Utils
+if [ ! -d  "${PU_HOME}/code" ]; then
+  pu_msg_fail_utf8 "folder specified in the env var PU_HOME (${PU_HOME}) does not exist!"
+else
+  if [ ! -f "${PU_HOME}/code/1.init.sh" ]; then
+    pu_msg_fail_utf8 ".ashrc - Mandatory file missing: ${PU_HOME}/code/1.init.sh"
+  else
+    # shellcheck disable=SC1091
+    . "${PU_HOME}/code/1.init.sh"
+  fi
 fi
 
 if [ ! -d "${IWCD_AIO_PROVIDED_SCRIPTS_HOME}" ]; then

@@ -6,7 +6,7 @@ docker image inspect iwcd-aio-base-s:alpine >nul 2>&1
 if errorlevel 1 (
     echo Image 'iwcd-aio-base-s:alpine' not found. Building it first...
     pushd .
-    cd ..\..\..\s\alpine\iwcd-aio-base
+    cd ..\..\..\s\alpine\aio-base
     call build-local.bat
     if errorlevel 1 (
         echo Failed to build 'iwcd-aio-base-s:alpine' image.

@@ -5,9 +5,9 @@ REM Check if the Docker image 'iwcd-aio-base-t:alpine' exists
 
 docker image inspect iwcd-aio-base-t:alpine >nul 2>&1
 if errorlevel 1 (
-    echo Image 'iwcd-aio-base-t:alpine' not found. Building it first...
+    echo Image 'aio-base-t:alpine' not found. Building it first...
     pushd .
-    cd ..\..\..\t\alpine\iwcd-aio-base
+    cd ..\..\..\t\alpine\aio-base
     call build-local.bat
     if errorlevel 1 (
         echo Failed to build 'iwcd-aio-base-t:alpine' image.

@@ -5,7 +5,7 @@
 if ! docker image inspect iwcd-aio-base-t:alpine >/dev/null 2>&1; then
     echo "Image 'iwcd-aio-base-t:alpine' not found. Building it first..."
     current_dir=$(pwd)
-    cd ../../../t/alpine/iwcd-aio-base || exit 1
+    cd ../../../t/alpine/aio-base || exit 1
     sh build-local.sh
     if [ $? -ne 0 ]; then
         echo "Failed to build 'iwcd-aio-base-t:alpine' image."
