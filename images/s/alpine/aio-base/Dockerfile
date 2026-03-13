@@ -47,6 +47,7 @@ RUN apk update --no-cache \
       npm \
       ripgrep \
       shellcheck \
+      shfmt \
       shunit2 \
       yazi
 
