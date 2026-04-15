@@ -7,6 +7,8 @@
 # Linting exception: we accept local keyword, it works with our arrangements
 # shellcheck disable=SC3043
 
+# TODO: simplify all scripts by removing wide utf-8 chars / emojis and all related management functions
+
 # Initialize session summary - creates two separate reports
 init_session_summary() {
     DOCKERFILE_SUMMARY="$SESSION_DIR/dockerfile_summary.md"
