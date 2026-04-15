@@ -65,6 +65,40 @@ extract_image_tag() {
     grep -o -- '-t [^ ]*' "$script_path" 2>/dev/null | head -1 | cut -d' ' -f2 || echo ""
 }
 
+# Function to extract build context from build script
+extract_build_context() {
+    local script_path="${1}"
+    local script_dir
+    script_dir=$(dirname "$script_path")
+
+    # Extract the build context from docker buildx build command
+    # Handle multi-line commands by joining lines ending with backslash
+    local context
+    context=$(sed -n '/docker \(buildx \)\?build/,/^[^\\]*$/p' "$script_path" 2>/dev/null | \
+              tr '\n' ' ' | \
+              sed 's/\\//g' | \
+              awk '{print $NF}')
+
+    if [ -z "$context" ] || [ "$context" = "\\" ]; then
+        # Default to current directory if not found
+        echo "$script_dir"
+        return
+    fi
+
+    # Resolve relative path from script directory
+    if [ "$context" = "." ]; then
+        echo "$script_dir"
+    elif [ "$context" = ".." ]; then
+        dirname "$script_dir"
+    else
+        # Handle other relative paths - normalize the path
+        local resolved
+        resolved="$script_dir/$context"
+        # Normalize path by removing redundant slashes and resolving ..
+        echo "$resolved" | sed 's#/\+#/#g; s#/[^/]*/\.\.##g; s#/\.$##'
+    fi
+}
+
 # Function to find all build-local*.sh scripts in a layer
 find_build_scripts() {
     local layer="${1}"
@@ -102,7 +136,18 @@ build_image() {
         mkdir -p "$output_dir"
 
         echo "  🔍 Pre-build: Running hadolint..."
-        local dockerfile="/workspace/images/$image_dir/Dockerfile"
+        # Extract build context from the build script to locate Dockerfile
+        local build_context
+        build_context=$(extract_build_context "/workspace/images/$script_path")
+        local dockerfile="$build_context/Dockerfile"
+
+        if [ ! -f "$dockerfile" ]; then
+            echo "  ⚠ Warning: Dockerfile not found at $dockerfile"
+            # Fallback to image_dir location
+            dockerfile="/workspace/images/$image_dir/Dockerfile"
+        fi
+
+        echo "  📁 Using Dockerfile: $dockerfile"
         hadolint_result=$(run_hadolint "$dockerfile" "$output_dir" "$scan_name")
     fi
 
@@ -165,9 +210,18 @@ build_image() {
                 overall_status="CLEAN"
             fi
 
-            # Add to session summary
-            echo "  📝 Adding to session summary..."
-            add_to_session_summary "$image_tag" "$hadolint_result" "$critical" "$high" "$medium" "$low" "$secrets" "$misconfig" "$overall_status"
+            # Add to separate summaries
+            echo "  📝 Adding to session summaries..."
+            # Add to image summary (Trivy results)
+            add_to_image_summary "$image_tag" "$critical" "$high" "$medium" "$low" "$secrets" "$misconfig" "$overall_status"
+            # Add to dockerfile summary (Hadolint results) - extract dockerfile path
+            local build_context
+            build_context=$(extract_build_context "/workspace/images/$script_path")
+            local dockerfile_rel_path
+            dockerfile_rel_path="${build_context#/workspace/images/}/Dockerfile"
+            # Clean up path - remove duplicate slashes and normalize
+            dockerfile_rel_path=$(echo "$dockerfile_rel_path" | sed 's#/\+#/#g; s#^/##')
+            add_to_dockerfile_summary "$dockerfile_rel_path" "$hadolint_result"
         else
             echo "  ⚠ Could not extract image tag, skipping trivy scan"
         fi
@@ -209,18 +263,20 @@ if [ "$BUILD_TARGET" = "all" ]; then
         fi
 
         # Build each image in this layer
-        echo "$build_scripts" > "/dev/shm/build_scripts_$(date +%s).txt"
+        __l_build_scripts_on_layer_file_name="${SESSION_DIR}/build_scripts_${layer}_layer_$(date +%s).txt"
+        echo "$build_scripts" > "${__l_build_scripts_on_layer_file_name}"
 
         while read -r script_path; do
-            if [ -n "$script_path" ]; then
-                if build_image "$script_path"; then
-                    total_built=$((total_built + 1))
-                else
-                    total_failed=$((total_failed + 1))
-                    # Continue building other images even if one fails
-                fi
+          if [ -n "$script_path" ]; then
+            if build_image "$script_path"; then
+              total_built=$((total_built + 1))
+            else
+              total_failed=$((total_failed + 1))
+              # Continue building other images even if one fails
             fi
-        done < "/dev/shm/build_scripts_$(date +%s).txt"
+          fi
+        done < "${__l_build_scripts_on_layer_file_name}"
+        unset __l_build_scripts_on_layer_file_name
 
         echo ""
         cd "$_l_crt_path" || exit 2
@@ -232,15 +288,21 @@ if [ "$BUILD_TARGET" = "all" ]; then
     echo "All layers processed (s → t → u)"
     if [ "$ENABLE_SCAN" = "true" ]; then
         echo "Scan results: $SESSION_DIR"
-        echo "Session summary: $SESSION_DIR/session_summary.md"
         echo ""
 
-        # Format the table for better readability
-        format_summary_table "$SESSION_DIR/session_summary.md"
+        # Format both summary tables
+        format_summary_table "$SESSION_DIR/dockerfile_summary.md"
+        format_summary_table "$SESSION_DIR/image_summary.md"
 
-        echo "📊 Session Summary Preview:"
-        if [ -f "$SESSION_DIR/session_summary.md" ]; then
-            tail -n +4 "$SESSION_DIR/session_summary.md"
+        echo "📋 Dockerfile Summary (Hadolint):"
+        if [ -f "$SESSION_DIR/dockerfile_summary.md" ]; then
+            tail -n +4 "$SESSION_DIR/dockerfile_summary.md"
+        fi
+        echo ""
+
+        echo "📊 Image Summary (Trivy):"
+        if [ -f "$SESSION_DIR/image_summary.md" ]; then
+            tail -n +4 "$SESSION_DIR/image_summary.md"
         fi
     fi
     echo ""
@@ -282,15 +344,21 @@ else
         echo "Build completed successfully!"
         if [ "$ENABLE_SCAN" = "true" ]; then
             echo "Scan results: $SESSION_DIR"
-            echo "Session summary: $SESSION_DIR/session_summary.md"
             echo ""
 
-            # Format the table for better readability
-            format_summary_table "$SESSION_DIR/session_summary.md"
+            # Format both summary tables
+            format_summary_table "$SESSION_DIR/dockerfile_summary.md"
+            format_summary_table "$SESSION_DIR/image_summary.md"
 
-            echo "📊 Session Summary:"
-            if [ -f "$SESSION_DIR/session_summary.md" ]; then
-                tail -n +4 "$SESSION_DIR/session_summary.md"
+            echo "📋 Dockerfile Summary (Hadolint):"
+            if [ -f "$SESSION_DIR/dockerfile_summary.md" ]; then
+                tail -n +4 "$SESSION_DIR/dockerfile_summary.md"
+            fi
+            echo ""
+
+            echo "📊 Image Summary (Trivy):"
+            if [ -f "$SESSION_DIR/image_summary.md" ]; then
+                tail -n +4 "$SESSION_DIR/image_summary.md"
             fi
         fi
         echo "==================================="

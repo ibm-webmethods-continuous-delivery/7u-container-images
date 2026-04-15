@@ -7,34 +7,73 @@
 # Linting exception: we accept local keyword, it works with our arrangements
 # shellcheck disable=SC3043
 
-# Initialize session summary
+# Initialize session summary - creates two separate reports
 init_session_summary() {
-    SUMMARY_FILE="$SESSION_DIR/session_summary.md"
+    DOCKERFILE_SUMMARY="$SESSION_DIR/dockerfile_summary.md"
+    IMAGE_SUMMARY="$SESSION_DIR/image_summary.md"
+    export DOCKERFILE_SUMMARY IMAGE_SUMMARY
 
-    cat > "$SUMMARY_FILE" << 'EOF'
-# Container Image Scan Session Summary
+    # Dockerfile (Hadolint) Summary
+    cat > "$DOCKERFILE_SUMMARY" << 'EOF'
+# Dockerfile Scan Summary (Hadolint)
 
 **Session ID:** SESSION_ID_PLACEHOLDER
 **Date:** DATE_PLACEHOLDER
 
-## Scan Results
+## Dockerfile Linting Results
 
-| Image | Hadolint | Critical | High | Medium | Low | Secrets | Misconfig | Status |
-|-------|----------|----------|------|--------|-----|---------|-----------|--------|
+| Dockerfile | Issues | Status |
+|------------|--------|--------|
 EOF
 
-    # Replace placeholders
+    # Image (Trivy) Summary
+    cat > "$IMAGE_SUMMARY" << 'EOF'
+# Container Image Scan Summary (Trivy)
+
+**Session ID:** SESSION_ID_PLACEHOLDER
+**Date:** DATE_PLACEHOLDER
+
+## Image Vulnerability Results
+
+| Image | Critical | High | Medium | Low | Secrets | Misconfig | Status |
+|-------|----------|------|--------|-----|---------|-----------|--------|
+EOF
+
+    # Replace placeholders in both files
     local current_date
     current_date=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
 
-    sed -i "s/SESSION_ID_PLACEHOLDER/$SCAN_SESSION/g" "$SUMMARY_FILE" 2>/dev/null || \
-        sed -i '' "s/SESSION_ID_PLACEHOLDER/$SCAN_SESSION/g" "$SUMMARY_FILE"
-
-    sed -i "s/DATE_PLACEHOLDER/$current_date/g" "$SUMMARY_FILE" 2>/dev/null || \
-        sed -i '' "s/DATE_PLACEHOLDER/$current_date/g" "$SUMMARY_FILE"
+    for file in "$DOCKERFILE_SUMMARY" "$IMAGE_SUMMARY"; do
+        sed -i "s/SESSION_ID_PLACEHOLDER/$SCAN_SESSION/g" "$file" 2>/dev/null || \
+            sed -i '' "s/SESSION_ID_PLACEHOLDER/$SCAN_SESSION/g" "$file"
+        sed -i "s/DATE_PLACEHOLDER/$current_date/g" "$file" 2>/dev/null || \
+            sed -i '' "s/DATE_PLACEHOLDER/$current_date/g" "$file"
+    done
 }
 
-# Add entry to session summary
+# Add entry to Dockerfile summary
+add_to_dockerfile_summary() {
+    local dockerfile_path="$1"
+    local hadolint_status="$2"
+
+    echo "| $dockerfile_path | $hadolint_status |" >> "$DOCKERFILE_SUMMARY"
+}
+
+# Add entry to Image summary
+add_to_image_summary() {
+    local image_name="$1"
+    local critical="$2"
+    local high="$3"
+    local medium="$4"
+    local low="$5"
+    local secrets="$6"
+    local misconfig="$7"
+    local overall_status="$8"
+
+    echo "| $image_name | $critical | $high | $medium | $low | $secrets | $misconfig | $overall_status |" >> "$IMAGE_SUMMARY"
+}
+
+# Legacy function for backward compatibility - now calls both summaries
 add_to_session_summary() {
     local image_name="$1"
     local hadolint_status="$2"
@@ -46,7 +85,10 @@ add_to_session_summary() {
     local misconfig="$8"
     local overall_status="$9"
 
-    echo "| $image_name | $hadolint_status | $critical | $high | $medium | $low | $secrets | $misconfig | $overall_status |" >> "$SUMMARY_FILE"
+    # Extract dockerfile path from image name context if available
+    # For now, use a simplified approach
+    add_to_dockerfile_summary "Dockerfile" "$hadolint_status"
+    add_to_image_summary "$image_name" "$critical" "$high" "$medium" "$low" "$secrets" "$misconfig" "$overall_status"
 }
 
 # Format and align the markdown table for better readability
@@ -57,10 +99,22 @@ format_summary_table() {
         return 1
     fi
 
-    # Extract the table part (lines 6 onwards), skip empty lines
+    # Extract the table part (lines 8 onwards for new format), skip empty lines
     local temp_table
     temp_table=$(mktemp)
-    sed -n '6,$p' "$summary_file" | grep -v '^[[:space:]]*$' > "$temp_table"
+    local temp_header
+    temp_header=$(mktemp)
+
+    # Extract header (line 8) and separator (line 9)
+    sed -n '8,9p' "$summary_file" > "$temp_header"
+
+    # Extract and sort data rows (line 10 onwards), skip empty lines
+    sed -n '10,$p' "$summary_file" | grep -v '^[[:space:]]*$' | sort > "$temp_table"
+
+    # Combine header and sorted data
+    cat "$temp_header" "$temp_table" > "${temp_table}.combined"
+    mv "${temp_table}.combined" "$temp_table"
+    rm -f "$temp_header"
 
     # Use awk to calculate column widths and format (BusyBox compatible)
     awk -F'|' '
@@ -268,10 +322,11 @@ run_trivy() {
     # Save summary to file for reference
     {
         echo "Vulnerability counts by severity:" > "${base_output}_summary.txt"
-        echo "CRITICAL: $critical"
-        echo "HIGH: $high"
-        echo "MEDIUM: $medium"
-        echo "LOW: $low"
+        echo "Image:    ${image_name}"
+        echo "CRITICAL: ${critical}"
+        echo "HIGH:     ${high}"
+        echo "MEDIUM:   ${medium}"
+        echo "LOW:      ${low}"
     } > "${base_output}_summary.txt"
 
     # Ensure we have numeric values
@@ -281,6 +336,7 @@ run_trivy() {
     low=${low:-0}
 
     echo "  📊 Vulnerability Summary:" | tee -a "${base_output}_summary.txt" >&2
+    echo "     Image:    ${image_name}" >&2
     echo "     CRITICAL: $critical" | tee -a "${base_output}_summary.txt" >&2
     echo "     HIGH:     $high" | tee -a "${base_output}_summary.txt" >&2
     echo "     MEDIUM:   $medium" | tee -a "${base_output}_summary.txt" >&2
@@ -306,6 +362,40 @@ run_trivy() {
     echo "$critical:$high:$medium:$low"
 }
 
+# Function to extract build context from build script
+extract_build_context() {
+    local script_path="${1}"
+    local script_dir
+    script_dir=$(dirname "$script_path")
+
+    # Extract the build context from docker buildx build command
+    # Handle multi-line commands by joining lines ending with backslash
+    local context
+    context=$(sed -n '/docker \(buildx \)\?build/,/^[^\\]*$/p' "$script_path" 2>/dev/null | \
+              tr '\n' ' ' | \
+              sed 's/\\//g' | \
+              awk '{print $NF}')
+
+    if [ -z "$context" ] || [ "$context" = "\\" ]; then
+        # Default to current directory if not found
+        echo "$script_dir"
+        return
+    fi
+
+    # Resolve relative path from script directory
+    if [ "$context" = "." ]; then
+        echo "$script_dir"
+    elif [ "$context" = ".." ]; then
+        dirname "$script_dir"
+    else
+        # Handle other relative paths - normalize the path
+        local resolved
+        resolved="$script_dir/$context"
+        # Normalize path by removing redundant slashes and resolving ..
+        echo "$resolved" | sed 's#/\+#/#g; s#/[^/]*/\.\.##g; s#/\.$##'
+    fi
+}
+
 # Main scanning function
 scan_image() {
     local image_dir="$1"
@@ -329,7 +419,19 @@ scan_image() {
     echo "   Output: $output_dir"
 
     # Run hadolint on Dockerfile
-    local dockerfile="/workspace/images/$image_dir/Dockerfile"
+    # Extract build context from the build script to locate Dockerfile
+    local script_path="/workspace/images/$image_dir/$script_name"
+    local build_context
+    build_context=$(extract_build_context "$script_path")
+    local dockerfile="$build_context/Dockerfile"
+
+    if [ ! -f "$dockerfile" ]; then
+        echo "  ⚠ Warning: Dockerfile not found at $dockerfile" >&2
+        # Fallback to image_dir location
+        dockerfile="/workspace/images/$image_dir/Dockerfile"
+    fi
+
+    echo "  📁 Using Dockerfile: $dockerfile" >&2
     local hadolint_result
     hadolint_result=$(run_hadolint "$dockerfile" "$output_dir" "$scan_name")
 

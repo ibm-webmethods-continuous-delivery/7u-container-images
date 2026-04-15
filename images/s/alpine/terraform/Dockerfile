@@ -1,11 +1,11 @@
 ARG __alpine_tag=3.23
 FROM alpine:${__alpine_tag} AS base
 
-ARG __tf_ver=1.14.7
+ARG __tf_ver=1.14.8
 ARG __trivy_ver=v0.69.3
 # Fundamental packages
 # We do not agree with this hadolint rule for Alpine or any other distro that only works with the latest version of a package.
-# hadolint ignore=DL3018
+# hadolint ignore=DL3018,DL4006
 RUN apk update --no-cache \
     && apk upgrade --no-cache \
     && apk add --no-cache \
@@ -18,6 +18,7 @@ RUN apk update --no-cache \
     && curl -sSL https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | sh
 
 # Add Trivy for security scanning
+# hadolint ignore=DL4006
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${__trivy_ver} /tmp/trivy-install.sh \
   && apk --no-cache upgrade

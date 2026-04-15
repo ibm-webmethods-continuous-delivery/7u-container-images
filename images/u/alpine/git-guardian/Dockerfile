@@ -12,16 +12,20 @@ ARG __gg_workspace_home=/gg
 # this folder is expected to receive a mount for the user home
 ARG __gg_user_home=/home/${__uname}
 
+ARG __gg_trivy_cache_dir=/mnt/trivy-cache
+
 ENV GG_USER_HOME=${__gg_user_home} \
-    GG_THIS_REPO_HOME=${__gg_workspace_home}
+    GG_THIS_REPO_HOME=${__gg_workspace_home} \
+    TRIVY_CACHE_DIR=${__gg_trivy_cache_dir}
 
 RUN addgroup -g ${__gid} ${__gname} \
     && mkdir -p \
       "${__gg_user_home}" \
+      "${__gg_trivy_cache_dir}" \
       "${__gg_workspace_home}" \
     && adduser -u ${__uid} -G ${__gname} -D -h ${__gg_user_home} ${__uname} \
     && rm -rf /tmp/* \
-    && chown -R ${__uid}:${__gid} "${__gg_workspace_home}" /tmp
+    && chown -R ${__uid}:${__gid} "${__gg_workspace_home}" "${__gg_trivy_cache_dir}" /tmp
 USER ${__uname}
 
 RUN git config --global --add safe.directory "${__gg_workspace_home}"
@@ -30,6 +34,7 @@ WORKDIR "${__gg_workspace_home}"
 
 VOLUME \
   "${__gg_user_home}" \
+  "${__gg_trivy_cache_dir}" \
   "${__gg_workspace_home}" \
   /tmp
 

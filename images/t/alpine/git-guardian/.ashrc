@@ -15,15 +15,13 @@ alias sclone="git clone --config commit.gpgsign=true"
 alias setup-ssh-key='${GG_PROVIDED_SCRIPTS_HOME}/setup-ssh-key.sh'
 alias configure-git='${GG_PROVIDED_SCRIPTS_HOME}/gitconfig.sh'
 
-# Source all files in ${PU_HOME}/code/ directory
-# to check: sourcing MUST occur in lexicographic order
-if [ -d "${PU_HOME}/code" ]; then
-  for script in "${PU_HOME}/code"/*; do
+# Controlled source of files in ${PU_HOME}/code/ directory
 
-    # we cannot determine the file names from this development point
-    # shellcheck source=/dev/null
-    [ -f "$script" ] && . "$script"
-  done
+if [ ! -f "${PU_HOME}/code/1.init.sh" ]; then
+  echo ".ashrc|ERROR - Mandatory file missing: ${PU_HOME}/code/1.init.sh"
+else
+  # shellcheck disable=SC1091
+  . "${PU_HOME}/code/1.init.sh"
 fi
 
 if [ ! -f "${GG_PROVIDED_SCRIPTS_HOME}/git-guardian-utils.sh" ]; then
