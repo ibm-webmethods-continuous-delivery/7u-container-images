@@ -17,7 +17,7 @@ RUN apk update --no-cache \
         jq
 
 # Add Trivy for security scanning
-ARG __trivy_ver=v0.69.3
+ARG __trivy_ver=v0.70.0
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${__trivy_ver} /tmp/trivy-install.sh \
   && apk --no-cache upgrade

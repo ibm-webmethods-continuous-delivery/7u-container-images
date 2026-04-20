@@ -4,7 +4,7 @@ ARG __alpine_tag=3.23
 FROM alpine:${__alpine_tag} AS stage1
 
 ARG __tf_ver=1.14.8
-ARG __trivy_ver=v0.69.3
+ARG __trivy_ver=v0.70.0
 # Fundamental packages
 # We do not agree with this hadolint rule for Alpine or any other distro that only works with the latest version of a package.
 # hadolint ignore=DL3018,DL4006
@@ -16,11 +16,8 @@ RUN apk update --no-cache \
     && curl -sSL \
       https://releases.hashicorp.com/terraform/${__tf_ver}/terraform_${__tf_ver}_linux_amd64.zip \
       -o /tmp/tf.zip \
-    && unzip /tmp/tf.zip -d /usr/local/bin
-
-    # Temporarily removed tflint on 2026-04-15 as it brings in the vulnerability https://nvd.nist.gov/vuln/detail/cve-2025-68121
-    # \
-    # && curl -sSL https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | sh
+    && unzip /tmp/tf.zip -d /usr/local/bin \
+    && curl -sSL https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | sh
 
 # Add Trivy for security scanning
 # hadolint ignore=DL4006
