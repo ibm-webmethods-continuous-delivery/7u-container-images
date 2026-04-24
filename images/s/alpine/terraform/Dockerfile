@@ -1,7 +1,7 @@
 ARG __alpine_tag=3.23
 FROM alpine:${__alpine_tag} AS base
 
-ARG __tf_ver=1.14.8
+ARG __tf_ver=1.14.9
 ARG __trivy_ver=v0.70.0
 # Fundamental packages
 # We do not agree with this hadolint rule for Alpine or any other distro that only works with the latest version of a package.

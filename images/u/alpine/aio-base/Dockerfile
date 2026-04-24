@@ -6,8 +6,9 @@ ARG __gname=iwcd-aio
 ARG __uid=1001
 ARG __uname=iwcd-aio
 
-# this folder receives a mount of the main repository
-ARG __iwcd_aio_workspace_home=/aio
+# this folder receives a mount of the work folder in the main repository.
+# the parent git folder MUST be hidden to this sandbox
+ARG __iwcd_aio_workspace_home=/aio/work
 
 # this folder is expected to receive a mount for the user home
 ARG __iwcd_aio_user_home=/home/${__uname}
@@ -23,8 +24,6 @@ RUN addgroup -g ${__gid} ${__gname} \
     && rm -rf /tmp/* \
     && chown -R ${__uid}:${__gid} "${__iwcd_aio_workspace_home}" /tmp
 USER ${__uname}
-
-RUN git config --global --add safe.directory "${__iwcd_aio_workspace_home}"
 
 WORKDIR "${__iwcd_aio_workspace_home}"
 
