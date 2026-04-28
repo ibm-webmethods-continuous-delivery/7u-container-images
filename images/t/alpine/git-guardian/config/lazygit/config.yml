@@ -1,0 +1,3 @@
+git:
+  # we do not want lazygit to autofetch, as we strictly control the keys
+  autoFetch: false
