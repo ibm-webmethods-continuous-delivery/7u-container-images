@@ -1,3 +1,9 @@
 git:
   # we do not want lazygit to autofetch, as we strictly control the keys
   autoFetch: false
+refresher:
+  # File/submodule refresh interval in seconds.
+  # Auto-refresh can be disabled via option 'git.autoRefresh'.
+  # Noticed frequent refreshes on busy repos may cause conflicts with the normal operations
+  # furthermore, if refreshes are frequent on slow repos, zombie processes are left in the container
+  refreshInterval: 300
