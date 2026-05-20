@@ -14,6 +14,7 @@ alias srebase="git rebase --signoff"
 alias sclone="git clone --config commit.gpgsign=true"
 alias setup-ssh-key='${GG_PROVIDED_SCRIPTS_HOME}/setup-ssh-key.sh'
 alias configure-git='${GG_PROVIDED_SCRIPTS_HOME}/gitconfig.sh'
+alias check-dos-lf="rg -l $'\r'"
 
 # Controlled source of files in ${PU_HOME}/code/ directory
 

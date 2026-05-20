@@ -25,7 +25,8 @@ RUN apk update --no-cache \
     && apk upgrade --no-cache \
     && apk add --no-cache \
       bash \
-      icu-data-full
+      icu-data-full \
+      ripgrep
 
 COPY --from=stage1 /usr/local/bin/ /usr/local/bin/
 COPY --from=stage1 /usr/local/lib/ /usr/local/lib/
