@@ -9,15 +9,18 @@ if ! docker image inspect iwcd-git-guardian-t:alpine >/dev/null 2>&1; then
   current_dir=$(pwd)
   cd ../../../t/alpine/git-guardian || exit 1
   sh build-local.sh
-  local l_build_result=$?
-  if [ ${l_build_result} -ne 0 ]; then
-    echo "Failed to build 'iwcd-git-guardian-t:alpine' image, return code ${l_build_result}"
+  __l_build_result=$?
+  if [ ${__l_build_result} -ne 0 ]; then
+    echo "Failed to build 'iwcd-git-guardian-t:alpine' image, return code ${__l_build_result}"
     cd "$current_dir" || exit 1
+    unset __l_build_result
     exit 1
   fi
   cd "$current_dir" || exit 1
 fi
 
 docker buildx build -t iwcd-git-guardian-u:alpine .
+
+unset __l_build_result
 
 # Made with Bob
