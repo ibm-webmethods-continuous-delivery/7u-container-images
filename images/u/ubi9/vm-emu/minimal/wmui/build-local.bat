@@ -9,7 +9,7 @@ docker image inspect iwcd-vm-emu-min-wmui-t:ubi9 >nul 2>&1
 if errorlevel 1 (
     echo Image 'iwcd-vm-emu-min-wmui-t:ubi9' not found. Building it first...
     pushd .
-    cd ..\..\..\..\..\t\ubi9\iwcd-vm-emu-min-wmui
+    cd ..\..\..\..\..\t\ubi9\vm-emu-min-wmui
     call build-local.bat
     if errorlevel 1 (
         echo Failed to build 'iwcd-vm-emu-min-wmui-t:ubi9' image.
