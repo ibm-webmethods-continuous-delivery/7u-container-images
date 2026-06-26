@@ -4,7 +4,7 @@ ARG __alpine_tag=3.23
 FROM alpine:${__alpine_tag} AS stage1
 
 ARG __tf_ver=1.15.6
-ARG __trivy_ver=v0.71.1
+ARG __trivy_ver=v0.71.2
 # Fundamental packages
 # We do not agree with this hadolint rule for Alpine or any other distro that only works with the latest version of a package.
 # hadolint ignore=DL3018,DL4006

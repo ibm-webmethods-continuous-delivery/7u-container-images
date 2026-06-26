@@ -8,7 +8,7 @@ echo "Building image iwcd-vm-emu-min-wmui-u:ubi9 ..."
 if ! docker image inspect iwcd-vm-emu-min-wmui-t:ubi9 >/dev/null 2>&1; then
     echo "Image 'iwcd-vm-emu-min-wmui-t:ubi9' not found. Building it first..."
     current_dir=$(pwd)
-    cd ../../../../../t/ubi9/iwcd-vm-emu-min-wmui || exit 1
+    cd ../../../../../t/ubi9/vm-emu-min-wmui || exit 1
     sh build-local.sh
     if [ $? -ne 0 ]; then
         echo "Failed to build 'iwcd-vm-emu-min-wmui-t:ubi9' image."
