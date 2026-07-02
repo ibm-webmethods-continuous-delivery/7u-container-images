@@ -26,10 +26,12 @@ export SCAN_SESSION
 echo "==================================="
 echo "Container Image Builder"
 echo "==================================="
-echo "Build Target: $BUILD_TARGET"
-echo "Scanning: $ENABLE_SCAN"
+echo "Build Target:   $BUILD_TARGET"
+echo "Scanning:       $ENABLE_SCAN"
+echo "Build User ID:  ${BUILD_USER_ID:-1001}"
+echo "Build Group ID: ${BUILD_GROUP_ID:-1001}"
 if [ "$ENABLE_SCAN" = "true" ]; then
-    echo "Scan Session: $SCAN_SESSION"
+    echo "Scan Session:   $SCAN_SESSION"
 fi
 echo "==================================="
 

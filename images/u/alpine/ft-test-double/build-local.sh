@@ -15,6 +15,9 @@ if ! docker image inspect iwcd-ft-test-double-t:alpine >/dev/null 2>&1; then
     cd "$current_dir" || exit 1
 fi
 
-docker buildx build -t iwcd-ft-test-double-u:alpine .
+docker buildx build \
+  --build-arg "__ftpd_user_id=${BUILD_USER_ID:-1001}" \
+  --build-arg "__ftpd_group_gid=${BUILD_GROUP_ID:-1001}" \
+  -t iwcd-ft-test-double-u:alpine .
 
 # Made with Bob

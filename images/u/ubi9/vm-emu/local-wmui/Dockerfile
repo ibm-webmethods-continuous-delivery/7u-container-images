@@ -35,8 +35,10 @@ ENV \
   PU_AUDIT_BASE_DIR=${__audit_home_dir} \
   WMUI_HOME=${__wmui_home_dir}
 
-RUN /usr/sbin/groupadd -r -g ${__group_id} ${__group_name} &&\
-    /usr/sbin/useradd -r -u ${__user_id} -m -d ${__user_home} -g ${__group_name} ${__user_name} &&\
+RUN { getent group ${__group_id} >/dev/null 2>&1 \
+        || /usr/sbin/groupadd -r -g ${__group_id} ${__group_name}; } &&\
+    { getent passwd ${__user_id} >/dev/null 2>&1 \
+        || /usr/sbin/useradd -r -u ${__user_id} -m -d ${__user_home} -g ${__group_id} ${__user_name}; } &&\
     mkdir -p \
       "${__artifacts_home_dir}" \
       "${__audit_home_dir}" \
@@ -44,7 +46,7 @@ RUN /usr/sbin/groupadd -r -g ${__group_id} ${__group_name} &&\
       "${__script_dir}" \
       "${__upd_mgr_home_dir}" \
       "${__wmui_home_dir}" &&\
-    chown -R ${__user_name}:${__group_name} \
+    chown -R ${__user_id}:${__group_id} \
       "${__artifacts_home_dir}" \
       "${__audit_home_dir}" \
       "${__install_dir}" \

@@ -19,9 +19,11 @@ if ! docker image inspect iwcd-vm-emu-min-pu-t:ubi9 >/dev/null 2>&1; then
 fi
 
 docker buildx build \
---build-arg "__from_image=iwcd-vm-emu-min-pu-t:ubi9" \
---no-cache \
--t iwcd-vm-emu-min-pu-u:ubi9 ..
+  --build-arg "__from_image=iwcd-vm-emu-min-pu-t:ubi9" \
+  --build-arg "__user_id=${BUILD_USER_ID:-1001}" \
+  --build-arg "__group_id=${BUILD_GROUP_ID:-1001}" \
+  --no-cache \
+  -t iwcd-vm-emu-min-pu-u:ubi9 ..
 
 echo "Built image iwcd-vm-emu-min-pu-u:ubi9."
 

@@ -15,6 +15,9 @@ if ! docker image inspect iwcd-terraform-s:alpine >/dev/null 2>&1; then
     cd "$current_dir" || exit 1
 fi
 
-docker buildx build -t iwcd-terraform-u:alpine .
+docker buildx build \
+  --build-arg "__uid=${BUILD_USER_ID:-1001}" \
+  --build-arg "__gid=${BUILD_GROUP_ID:-1001}" \
+  -t iwcd-terraform-u:alpine .
 
 # Made with Bob

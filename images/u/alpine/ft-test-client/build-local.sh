@@ -15,6 +15,9 @@ if ! docker image inspect iwcd-ft-test-client-t:alpine >/dev/null 2>&1; then
     cd "$current_dir" || exit 1
 fi
 
-docker buildx build -t iwcd-ft-test-client-u:alpine .
+docker buildx build \
+  --build-arg "__test_user_id=${BUILD_USER_ID:-1001}" \
+  --build-arg "__test_group_gid=${BUILD_GROUP_ID:-1001}" \
+  -t iwcd-ft-test-client-u:alpine .
 
 # Made with Bob

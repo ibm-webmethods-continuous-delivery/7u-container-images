@@ -1,4 +1,4 @@
-ARG __alpine_tag=3.23
+ARG __alpine_tag=3.24
 FROM alpine:${__alpine_tag}
 
 # Copyright IBM Corp. 2026 - 2026
@@ -17,7 +17,7 @@ RUN apk update --no-cache \
         jq
 
 # Add Trivy for security scanning
-ARG __trivy_ver=v0.71.2
+ARG __trivy_ver=v0.72.0
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${__trivy_ver} /tmp/trivy-install.sh \
   && apk --no-cache upgrade

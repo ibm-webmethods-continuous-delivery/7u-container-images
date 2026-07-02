@@ -18,12 +18,14 @@ ENV GG_USER_HOME=${__gg_user_home} \
     GG_THIS_REPO_HOME=${__gg_workspace_home} \
     TRIVY_CACHE_DIR=${__gg_trivy_cache_dir}
 
-RUN addgroup -g ${__gid} ${__gname} \
+RUN { getent group ${__gid} >/dev/null 2>&1 \
+        || addgroup -g ${__gid} ${__gname}; } \
+    && { getent passwd ${__uid} >/dev/null 2>&1 \
+        || adduser -u ${__uid} -g ${__gid} -D -h ${__gg_user_home} ${__uname}; } \
     && mkdir -p \
       "${__gg_user_home}" \
       "${__gg_trivy_cache_dir}" \
       "${__gg_workspace_home}" \
-    && adduser -u ${__uid} -G ${__gname} -D -h ${__gg_user_home} ${__uname} \
     && rm -rf /tmp/* \
     && chown -R ${__uid}:${__gid} "${__gg_workspace_home}" "${__gg_trivy_cache_dir}" /tmp
 USER ${__uname}

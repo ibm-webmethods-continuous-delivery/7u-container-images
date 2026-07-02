@@ -8,10 +8,12 @@ services:
       - ./scan-results:/scan-results
       - trivy-cache:/root/.cache/trivy
     working_dir: /workspace/.sbx/7u-ci-builder
-    entrypoint: ["sh", "/workspace/.sbx/7u-ci-builder/build.sh"]
+    entrypoint: ["sh", "/workspace/.sbx/7u-ci-builder/build-entrypoint.sh"]
     environment:
       - BUILD_TARGET=${BUILD_TARGET:-all}
       - ENABLE_SCAN=${ENABLE_SCAN:-false}
+      - BUILD_USER_ID
+      - BUILD_GROUP_ID
 
 volumes:
   trivy-cache:

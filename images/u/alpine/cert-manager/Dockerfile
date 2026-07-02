@@ -15,11 +15,13 @@ ARG __cmgr_user_home=/home/${__uname}
 ENV CERT_MGR_USER_HOME=${__cmgr_user_home} \
     CERT_MGR_DATA_FOLDER=${__cmgr_data_folder}
 
-RUN addgroup -g ${__gid} ${__gname} \
+RUN { getent group ${__gid} >/dev/null 2>&1 \
+        || addgroup -g ${__gid} ${__gname}; } \
+    && { getent passwd ${__uid} >/dev/null 2>&1 \
+        || adduser -u ${__uid} -G ${__gid} -D -h ${__cmgr_user_home} ${__uname}; } \
     && mkdir -p \
       "${__cmgr_user_home}" \
       "${__cmgr_data_folder}" \
-    && adduser -u ${__uid} -G ${__gname} -D -h ${__cmgr_user_home} ${__uname} \
     && rm -rf /tmp/* \
     && chown -R ${__uid}:${__gid} "${__cmgr_data_folder}" /tmp
 USER ${__uname}

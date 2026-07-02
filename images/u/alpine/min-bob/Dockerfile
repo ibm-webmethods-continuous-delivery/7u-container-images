@@ -15,11 +15,13 @@ ARG __bob_user_home=/home/${__uname}
 ENV BOB_USER_HOME=${__bob_user_home} \
     BOB_THIS_REPO_HOME=${__bob_workspace_home}
 
-RUN addgroup -g ${__gid} ${__gname} \
+RUN { getent group ${__gid} >/dev/null 2>&1 \
+        || addgroup -g ${__gid} ${__gname}; } \
+    && { getent passwd ${__uid} >/dev/null 2>&1 \
+        || adduser -u ${__uid} -G ${__gid} -D -h ${__bob_user_home} ${__uname}; } \
     && mkdir -p \
       "${__bob_user_home}" \
       "${__bob_workspace_home}" \
-    && adduser -u ${__uid} -G ${__gname} -D -h ${__bob_user_home} ${__uname} \
     && rm -rf /tmp/* \
     && chown -R ${__uid}:${__gid} "${__bob_workspace_home}" /tmp
 USER ${__uname}

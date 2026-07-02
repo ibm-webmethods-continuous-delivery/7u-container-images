@@ -7,21 +7,23 @@ FROM ${__base_image}
 #
 
 # Non-root user for test execution
-ARG __test_user_id=1000
+ARG __test_user_id=1001
 ARG __test_user_name=tester
-ARG __test_group_gid=1000
+ARG __test_group_gid=1001
 ARG __test_group_name=tester
 
 # Test directories
 ENV FT_TESTS_HOME=/tests \
     FT_RESULTS_HOME=/results
 
-# Create non-root user
-RUN addgroup -g "${__test_group_gid}" "${__test_group_name}" \
-    && adduser -D -u "${__test_user_id}" \
-        -G "${__test_group_name}" \
-        -h /home/${__test_user_name} \
-        "${__test_user_name}" \
+# Create non-root user if not already present
+RUN { getent group "${__test_group_gid}" >/dev/null 2>&1 \
+        || addgroup -g "${__test_group_gid}" "${__test_group_name}"; } \
+    && { getent passwd "${__test_user_id}" >/dev/null 2>&1 \
+        || adduser -D -u "${__test_user_id}" \
+          -G "${__test_group_gid}" \
+          -h /home/${__test_user_name} \
+          "${__test_user_name}"; } \
     && mkdir -p ${FT_TESTS_HOME} ${FT_RESULTS_HOME} \
     && chown -R ${__test_user_id}:${__test_group_gid} \
         ${FT_TESTS_HOME} ${FT_RESULTS_HOME}

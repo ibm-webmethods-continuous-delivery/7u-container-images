@@ -19,7 +19,10 @@ if ! docker image inspect iwcd-git-guardian-t:alpine >/dev/null 2>&1; then
   cd "$current_dir" || exit 1
 fi
 
-docker buildx build -t iwcd-git-guardian-u:alpine .
+docker buildx build \
+  --build-arg "__uid=${BUILD_USER_ID:-1001}" \
+  --build-arg "__gid=${BUILD_GROUP_ID:-1001}" \
+  -t iwcd-git-guardian-u:alpine .
 
 unset __l_build_result
 

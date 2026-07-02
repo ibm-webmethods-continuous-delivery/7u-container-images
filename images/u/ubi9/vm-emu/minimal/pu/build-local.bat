@@ -19,9 +19,13 @@ if errorlevel 1 (
     popd
 )
 
+if not defined BUILD_USER_ID set BUILD_USER_ID=1001
+if not defined BUILD_GROUP_ID set BUILD_GROUP_ID=1001
 docker buildx build ^
---build-arg "__from_image=iwcd-vm-emu-min-pu-t:ubi9" ^
---no-cache ^
--t iwcd-vm-emu-min-pu-u:ubi9 ..
+  --build-arg "__from_image=iwcd-vm-emu-min-pu-t:ubi9" ^
+  --build-arg "__user_id=%BUILD_USER_ID%" ^
+  --build-arg "__group_id=%BUILD_GROUP_ID%" ^
+  --no-cache ^
+  -t iwcd-vm-emu-min-pu-u:ubi9 ..
 
 echo Built image iwcd-vm-emu-min-pu-u:ubi9.

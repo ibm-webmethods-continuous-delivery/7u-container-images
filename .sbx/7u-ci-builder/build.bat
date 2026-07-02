@@ -19,6 +19,8 @@ cd /d "%SCRIPT_DIR%"
 REM Parse arguments
 set BUILD_TARGET=all
 set ENABLE_SCAN=false
+if not defined BUILD_USER_ID set BUILD_USER_ID=1001
+if not defined BUILD_GROUP_ID set BUILD_GROUP_ID=1001
 
 :parse_args
 if "%~1"=="" goto :done_parsing
@@ -39,11 +41,18 @@ echo Container Image Builder
 echo ===================================
 echo Build Target: %BUILD_TARGET%
 echo Scanning: %ENABLE_SCAN%
+echo Build User ID: %BUILD_USER_ID%
+echo Build Group ID: %BUILD_GROUP_ID%
 echo ===================================
 echo.
 
 REM Run the build using docker compose
-docker compose run --rm -e BUILD_TARGET=%BUILD_TARGET% -e ENABLE_SCAN=%ENABLE_SCAN% 7u-ci-builder
+docker compose run --rm ^
+  -e BUILD_TARGET=%BUILD_TARGET% ^
+  -e ENABLE_SCAN=%ENABLE_SCAN% ^
+  -e BUILD_USER_ID=%BUILD_USER_ID% ^
+  -e BUILD_GROUP_ID=%BUILD_GROUP_ID% ^
+  7u-ci-builder
 
 if errorlevel 1 (
     echo.

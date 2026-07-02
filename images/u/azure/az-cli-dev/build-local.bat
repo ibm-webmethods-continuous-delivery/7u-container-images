@@ -17,4 +17,9 @@ if errorlevel 1 (
     popd
 )
 
-docker buildx build -t iwcd-az-cli-dev-u:azure-linux .
+if not defined BUILD_USER_ID set BUILD_USER_ID=1001
+if not defined BUILD_GROUP_ID set BUILD_GROUP_ID=1001
+docker buildx build ^
+  --build-arg "__uid=%BUILD_USER_ID%" ^
+  --build-arg "__gid=%BUILD_GROUP_ID%" ^
+  -t iwcd-az-cli-dev-u:azure-linux .

@@ -15,6 +15,9 @@ if ! docker image inspect iwcd-az-cli-dev-s:azure-linux >/dev/null 2>&1; then
     cd "$current_dir" || exit 1
 fi
 
-docker buildx build -t iwcd-az-cli-dev-u:azure-linux .
+docker buildx build \
+  --build-arg "__uid=${BUILD_USER_ID:-1001}" \
+  --build-arg "__gid=${BUILD_GROUP_ID:-1001}" \
+  -t iwcd-az-cli-dev-u:azure-linux .
 
 # Made with Bob

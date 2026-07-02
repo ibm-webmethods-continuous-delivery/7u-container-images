@@ -112,6 +112,30 @@ Example: Building `u/alpine/cert-manager` will automatically:
 - `BUILD_TARGET`: Specifies what to build
   - `all` (default): Build all images
   - `<path>`: Build specific image (e.g., `u/alpine/git-guardian`)
+- `BUILD_USER_ID`: UID baked into u-tier images for the container user (default: `1001`).
+  Set to `$(id -u)` (Linux/macOS) or your Windows account SID equivalent so that
+  mounted files are owned by your current user, avoiding permission surprises.
+- `BUILD_GROUP_ID`: GID baked into u-tier images (default: `1001`).
+  Set to `$(id -g)` on Linux/macOS.
+
+### Example — build with your host user
+
+```bash
+# Linux / macOS — pass your real UID and GID
+BUILD_USER_ID=$(id -u) BUILD_GROUP_ID=$(id -g) docker compose run --rm 7u-ci-builder
+
+# Or persist them in .env next to docker-compose.yml
+echo "BUILD_USER_ID=$(id -u)" >> .env
+echo "BUILD_GROUP_ID=$(id -g)" >> .env
+docker compose run --rm 7u-ci-builder
+```
+
+On Windows, set the variables before calling `build.bat`:
+```bat
+set BUILD_USER_ID=1234
+set BUILD_GROUP_ID=1234
+build.bat
+```
 
 ## Notes
 

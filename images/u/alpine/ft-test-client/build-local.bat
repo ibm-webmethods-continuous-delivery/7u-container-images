@@ -18,6 +18,12 @@ if errorlevel 1 (
     popd
 )
 
-docker buildx build --progress=plain -t iwcd-ft-test-client-u:alpine .
+if not defined BUILD_USER_ID set BUILD_USER_ID=1001
+if not defined BUILD_GROUP_ID set BUILD_GROUP_ID=1001
+docker buildx build ^
+  --build-arg "__test_user_id=%BUILD_USER_ID%" ^
+  --build-arg "__test_group_gid=%BUILD_GROUP_ID%" ^
+  --progress=plain ^
+  -t iwcd-ft-test-client-u:alpine .
 
 @REM Made with Bob

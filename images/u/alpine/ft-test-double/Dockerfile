@@ -12,6 +12,7 @@ ARG __ftpd_user_name=ftpd
 ARG __ftpd_group_gid=1001
 ARG __ftpd_group_name=ftpdgrp
 
+
 # Test users (for file transfer operations)
 ARG __ft_test_user01_uid=2001
 ARG __ft_test_user01_name=ftuser01
@@ -40,10 +41,12 @@ RUN mkdir -p \
       "${__ftpd_log_folder}" \
     && touch "${__ftpd_config_file}" \
     && . "${FTD_PROVIDED_SCRIPTS_HOME}"/ft-test-double-functions.sh \
-    && addgroup -g "${__ftpd_group_gid}" "${__ftpd_group_name}" \
-    && adduser -D -u "${__ftpd_user_id}" \
-      -G "${__ftpd_group_name}" -H -s /sbin/nologin \
-      "${__ftpd_user_name}" \
+    && { getent group "${__ftpd_group_gid}" >/dev/null 2>&1 \
+           || addgroup -g "${__ftpd_group_gid}" "${__ftpd_group_name}"; } \
+    && { getent passwd "${__ftpd_user_id}" >/dev/null 2>&1 \
+           || adduser -D -u "${__ftpd_user_id}" \
+             -G "${__ftpd_group_gid}" -H -s /sbin/nologin \
+             "${__ftpd_user_name}"; } \
     && create_ftp_user \
       "${__ft_test_user01_name}" \
       "${__ft_test_user01_uid}" \

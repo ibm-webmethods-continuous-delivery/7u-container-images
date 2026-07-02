@@ -15,11 +15,13 @@ ARG __iwcd_az_cli_dev_user_home=/home/${__uname}
 ENV IWCD_AZ_CLI_DEV_USER_HOME=${__iwcd_az_cli_dev_user_home} \
     IWCD_AZ_CLI_DEV_THIS_REPO_HOME=${__iwcd_az_cli_dev_workspace_home}
 
-RUN groupadd -g ${__gid} ${__gname} \
+RUN { getent group ${__gid} >/dev/null 2>&1 \
+        || groupadd -g ${__gid} ${__gname}; } \
+    && { getent passwd ${__uid} >/dev/null 2>&1 \
+        || useradd -u ${__uid} -g ${__gid} -l -d ${__iwcd_az_cli_dev_user_home} ${__uname}; } \
     && mkdir -p \
       "${__iwcd_az_cli_dev_user_home}" \
       "${__iwcd_az_cli_dev_workspace_home}" \
-    && useradd -u ${__uid} -g ${__gid} -l -d ${__iwcd_az_cli_dev_user_home} ${__uname} \
     && rm -rf /tmp/* \
     && chown -R ${__uid}:${__gid} \
       "${__iwcd_az_cli_dev_user_home}" \

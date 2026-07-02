@@ -57,17 +57,16 @@ FROM ${__edge_image}
 ARG __pck_home=/opt/webmethods/IntegrationServer/packages
 ARG __pck_name=ZxPipelineLogger
 
-ARG __new_user_id=1001
-ARG __new_user_id=1001
+ARG __uid=1001
 ARG __img_user_name=sagadmin
 
 ARG __products_home=/opt/webmethods
 
 USER root
 
-RUN usermod -u ${__new_user_id} ${__img_user_name}
+RUN usermod -u ${__uid} ${__img_user_name}
 
-COPY --chown=${__new_user_id}:0 --from=builder \
+COPY --chown=${__uid}:0 --from=builder \
     ${__pck_home}/${__pck_name}/ \
     ${__pck_home}/${__pck_name}/
 

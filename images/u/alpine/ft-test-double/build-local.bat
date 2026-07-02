@@ -16,4 +16,9 @@ if errorlevel 1 (
     popd
 )
 
-docker buildx build -t iwcd-ft-test-double-u:alpine .
+if not defined BUILD_USER_ID set BUILD_USER_ID=1001
+if not defined BUILD_GROUP_ID set BUILD_GROUP_ID=1001
+docker buildx build ^
+  --build-arg "__ftpd_user_id=%BUILD_USER_ID%" ^
+  --build-arg "__ftpd_group_gid=%BUILD_GROUP_ID%" ^
+  -t iwcd-ft-test-double-u:alpine .
