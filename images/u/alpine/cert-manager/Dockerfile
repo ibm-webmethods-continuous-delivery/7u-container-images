@@ -18,7 +18,9 @@ ENV CERT_MGR_USER_HOME=${__cmgr_user_home} \
 RUN { getent group ${__gid} >/dev/null 2>&1 \
         || addgroup -g ${__gid} ${__gname}; } \
     && { getent passwd ${__uid} >/dev/null 2>&1 \
-        || adduser -u ${__uid} -G ${__gid} -D -h ${__cmgr_user_home} ${__uname}; } \
+        || adduser -u ${__uid} \
+          -G "$(getent group ${__gid} | cut -d: -f1)" \
+          -D -h ${__cmgr_user_home} ${__uname}; } \
     && mkdir -p \
       "${__cmgr_user_home}" \
       "${__cmgr_data_folder}" \

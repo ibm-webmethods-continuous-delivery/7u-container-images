@@ -18,7 +18,9 @@ ENV IWCD_TF_USER_HOME=${__iwcd_tf_user_home} \
 RUN { getent group ${__gid} >/dev/null 2>&1 \
         || addgroup -g ${__gid} ${__gname}; } \
     && { getent passwd ${__uid} >/dev/null 2>&1 \
-        || adduser -u ${__uid} -G ${__gid} -D -h ${__iwcd_tf_user_home} ${__uname}; } \
+        || adduser -u ${__uid} \
+          -G "$(getent group ${__gid} | cut -d: -f1)" \
+          -D -h ${__iwcd_tf_user_home} ${__uname}; } \
     && mkdir -p \
       "${__iwcd_tf_user_home}" \
       "${__iwcd_tf_workspace_home}" \

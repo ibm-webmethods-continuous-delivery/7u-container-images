@@ -21,7 +21,7 @@ RUN { getent group "${__test_group_gid}" >/dev/null 2>&1 \
         || addgroup -g "${__test_group_gid}" "${__test_group_name}"; } \
     && { getent passwd "${__test_user_id}" >/dev/null 2>&1 \
         || adduser -D -u "${__test_user_id}" \
-          -G "${__test_group_gid}" \
+          -G "$(getent group ${__test_group_gid} | cut -d: -f1)" \
           -h /home/${__test_user_name} \
           "${__test_user_name}"; } \
     && mkdir -p ${FT_TESTS_HOME} ${FT_RESULTS_HOME} \

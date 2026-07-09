@@ -45,7 +45,8 @@ RUN mkdir -p \
            || addgroup -g "${__ftpd_group_gid}" "${__ftpd_group_name}"; } \
     && { getent passwd "${__ftpd_user_id}" >/dev/null 2>&1 \
            || adduser -D -u "${__ftpd_user_id}" \
-             -G "${__ftpd_group_gid}" -H -s /sbin/nologin \
+             -G "$(getent group ${__ftpd_group_gid} | cut -d: -f1)" \
+             -H -s /sbin/nologin \
              "${__ftpd_user_name}"; } \
     && create_ftp_user \
       "${__ft_test_user01_name}" \
