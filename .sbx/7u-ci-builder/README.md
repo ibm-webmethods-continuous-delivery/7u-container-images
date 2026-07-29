@@ -12,6 +12,13 @@ It includes:
 
 ### Build All Images
 ```bash
+# macOS / Linux - build only
+cd /path/to/7u-container-images/.sbx/7u-ci-builder
+./build.sh
+
+# Build with security scanning
+./build.sh --scan
+
 # From Windows - build only
 cd c:\iwcd\7u-container-images\.sbx\7u-ci-builder
 build.bat
@@ -26,6 +33,15 @@ docker compose run --rm -e ENABLE_SCAN=true 7u-ci-builder
 
 ### Build Specific Image
 ```bash
+# macOS / Linux - builds the image and its dependencies
+./build.sh u/alpine/git-guardian
+./build.sh t/alpine/cert-manager
+./build.sh s/alpine/iwcd-aio-base
+
+# Build with security scanning
+./build.sh u/alpine/git-guardian --scan
+./build.sh t/alpine/cert-manager -s
+
 # From Windows - builds the image and its dependencies
 build.bat u/alpine/git-guardian
 build.bat t/alpine/cert-manager
