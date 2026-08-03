@@ -1,10 +1,10 @@
-ARG __alpine_tag=3.23
+ARG __alpine_tag=3.24
 
-ARG __alpine_tag=3.23
+ARG __alpine_tag=3.24
 FROM alpine:${__alpine_tag} AS stage1
 
-ARG __tf_ver=1.15.6
-ARG __trivy_ver=v0.71.2
+ARG __tf_ver=1.15.8
+ARG __trivy_ver=v0.73.0
 # Fundamental packages
 # We do not agree with this hadolint rule for Alpine or any other distro that only works with the latest version of a package.
 # hadolint ignore=DL3018,DL4006
@@ -26,7 +26,7 @@ RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/
   && apk --no-cache upgrade
 
 ## Add Hadolint for container building artifacts scanning
-ARG __hadolint_version=v2.14.0
+ARG __hadolint_version=v2.15.1
 ARG __hadolint_cpu_arch=x86_64
 RUN curl -sSL "https://github.com/hadolint/hadolint/releases/download/${__hadolint_version}/hadolint-Linux-${__hadolint_cpu_arch}" \
   -o /usr/local/bin/hadolint \

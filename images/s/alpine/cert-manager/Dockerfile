@@ -1,4 +1,4 @@
-ARG __alpine_tag=3.23
+ARG __alpine_tag=3.24
 FROM alpine:${__alpine_tag}
 
 # Copyright IBM Corp. 2026 - 2026

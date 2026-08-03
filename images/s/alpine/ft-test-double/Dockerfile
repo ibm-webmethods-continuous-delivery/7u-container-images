@@ -1,4 +1,4 @@
-ARG __alpine_tag=3.23
+ARG __alpine_tag=3.24
 
 # Stage 1: Build OQS Provider for Post-Quantum Cryptography
 FROM alpine:${__alpine_tag} AS oqs-builder

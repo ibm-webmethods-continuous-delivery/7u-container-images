@@ -23,4 +23,4 @@ if [ -z "${WPM_TOKEN}" ]; then
 fi
 
 # --secret passes the token only as a tmpfs mount; it is never stored in any image layer.
-docker buildx build --secret id=wpm_token,env=WPM_TOKEN -t iwcd-edge-debug-jdbc:latest .
+docker buildx build --secret id=wpm_token,env=WPM_TOKEN -t iwcd-edge-debug-jdbc:latest --platform linux/amd64 .

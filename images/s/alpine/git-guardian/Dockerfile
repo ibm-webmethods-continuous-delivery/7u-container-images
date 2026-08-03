@@ -1,4 +1,4 @@
-ARG __alpine_tag=3.23
+ARG __alpine_tag=3.24
 FROM alpine:${__alpine_tag}
 
 #
@@ -22,7 +22,7 @@ RUN apk update --no-cache \
       shunit2 \
       yazi
 
-ARG __trivy_ver=v0.71.2
+ARG __trivy_ver=v0.73.0
 # hadolint ignore=DL4006
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${__trivy_ver} /tmp/trivy-install.sh \

@@ -1,4 +1,4 @@
-ARG __alpine_version=3.23
+ARG __alpine_version=3.24
 FROM alpine:${__alpine_version} AS stage1
 
 ############## Part 1 - bring the prerequisites

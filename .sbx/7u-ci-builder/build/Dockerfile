@@ -17,13 +17,13 @@ RUN apk update --no-cache \
         jq
 
 # Add Trivy for security scanning
-ARG __trivy_ver=v0.72.0
+ARG __trivy_ver=v0.73.0
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${__trivy_ver} /tmp/trivy-install.sh \
   && apk --no-cache upgrade
 
 ## Add Hadolint for container based artifacts scanning
-ARG __hadolint_version=v2.14.0
+ARG __hadolint_version=v2.15.1
 ARG __hadolint_cpu_arch=x86_64
 RUN curl -sSL "https://github.com/hadolint/hadolint/releases/download/${__hadolint_version}/hadolint-Linux-${__hadolint_cpu_arch}" \
   -o /usr/local/bin/hadolint \
