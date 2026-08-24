@@ -3,4 +3,6 @@
 REM Copyright 2026 IBM Corporation
 REM SPDX-License-Identifier: Apache-2.0
 
-docker buildx build -t iwcd-vm-emu-minimal-s:ubi9 .
+docker buildx build ^
+  --platform linux/amd64 ^
+  -t iwcd-vm-emu-minimal-s:ubi9 .

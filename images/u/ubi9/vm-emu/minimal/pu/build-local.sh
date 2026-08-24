@@ -19,6 +19,7 @@ if ! docker image inspect iwcd-vm-emu-min-pu-t:ubi9 >/dev/null 2>&1; then
 fi
 
 docker buildx build \
+  --platform linux/amd64 \
   --build-arg "__from_image=iwcd-vm-emu-min-pu-t:ubi9" \
   --build-arg "__user_id=${BUILD_USER_ID:-1001}" \
   --build-arg "__group_id=${BUILD_GROUP_ID:-1001}" \

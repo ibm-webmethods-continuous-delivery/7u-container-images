@@ -28,7 +28,8 @@ ENV \
   IWCD_VM_EMU_LOCAL_SCRIPTS_HOME=${__script_dir} \
   IWCD_VM_EMU_UPD_MGR_HOME=${__upd_mgr_home_dir} \
   IWCD_VM_EMU_USER_HOME=${__user_home} \
-  IWCD_VM_EMU_ARTIFACTS_HOME=${__artifacts_home_dir}
+  IWCD_VM_EMU_ARTIFACTS_HOME=${__artifacts_home_dir} \
+  PU_AUDIT_BASE_DIR=${__audit_home_dir}
 
 RUN { getent group ${__group_id} >/dev/null 2>&1 \
         || /usr/sbin/groupadd -r -g ${__group_id} ${__group_name}; } &&\

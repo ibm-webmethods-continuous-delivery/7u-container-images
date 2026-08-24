@@ -22,6 +22,7 @@ if errorlevel 1 (
 if not defined BUILD_USER_ID set BUILD_USER_ID=1001
 if not defined BUILD_GROUP_ID set BUILD_GROUP_ID=1001
 docker buildx build ^
+  --platform linux/amd64 ^
   --build-arg "__from_image=iwcd-vm-emu-min-wmui-t:ubi9" ^
   --build-arg "__user_id=%BUILD_USER_ID%" ^
   --build-arg "__group_id=%BUILD_GROUP_ID%" ^

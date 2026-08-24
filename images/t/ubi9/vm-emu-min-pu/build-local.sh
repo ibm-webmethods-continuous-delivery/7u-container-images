@@ -20,8 +20,9 @@ if ! docker image inspect iwcd-vm-emu-minimal-s:ubi9 >/dev/null 2>&1; then
 fi
 
 docker buildx build \
---no-cache \
--t iwcd-vm-emu-min-pu-t:ubi9 .
+  --platform linux/amd64 \
+  --no-cache \
+  -t iwcd-vm-emu-min-pu-t:ubi9 .
 
 echo "Built image iwcd-vm-emu-min-pu-t:ubi9."
 

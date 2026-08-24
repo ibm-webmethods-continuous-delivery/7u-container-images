@@ -21,7 +21,8 @@ if errorlevel 1 (
 )
 
 docker buildx build ^
---no-cache ^
--t iwcd-vm-emu-min-pu-t:ubi9 .
+  --platform linux/amd64 ^
+  --no-cache ^
+  -t iwcd-vm-emu-min-pu-t:ubi9 .
 
 echo Built image iwcd-vm-emu-min-pu-t:ubi9.

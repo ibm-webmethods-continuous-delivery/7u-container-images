@@ -22,7 +22,7 @@ RUN apk update --no-cache \
       shunit2 \
       yazi
 
-ARG __trivy_ver=v0.73.0
+ARG __trivy_ver=v0.74.0
 # hadolint ignore=DL4006
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
   | sh -s -- -b /usr/local/bin ${__trivy_ver} /tmp/trivy-install.sh \
