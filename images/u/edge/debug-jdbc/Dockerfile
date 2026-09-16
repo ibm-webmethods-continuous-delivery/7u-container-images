@@ -12,6 +12,7 @@ RUN --mount=type=secret,id=wpm_token,mode=0444 \
     /opt/webmethods/wpm/bin/wpm.sh install WmJDBCAdapter \
         -d /opt/webmethods/IntegrationServer \
         -wr licensed \
+        -ad true \
         -j "$(cat /run/secrets/wpm_token)"
 
 FROM ${__edge_image}
