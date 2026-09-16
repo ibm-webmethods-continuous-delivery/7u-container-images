@@ -18,6 +18,9 @@ cd "$SCRIPT_DIR"
 # Defaults
 BUILD_TARGET="all"
 ENABLE_SCAN="false"
+
+. .env
+
 : "${BUILD_USER_ID:=$(id -u)}"
 : "${BUILD_GROUP_ID:=$(id -g)}"
 

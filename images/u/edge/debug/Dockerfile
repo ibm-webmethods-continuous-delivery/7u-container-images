@@ -101,7 +101,7 @@ FROM ${__target_image}
 
 ARG __wm_home=/opt/webmethods
 ARG __wzp_local_uid=1001
-ARG __wzp_local_gid=1001
+ARG __wzp_local_gid=0
 ARG __img_user_name=sagadmin
 ARG __pck_name=ZxPipelineLogger
 ARG __pck_home=${__wm_home}/IntegrationServer/packages
