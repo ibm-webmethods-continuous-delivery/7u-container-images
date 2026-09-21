@@ -1,11 +1,9 @@
-# syntax=docker/dockerfile:1
-ARG __edge_image=iwcd-edge-debug:latest
+ARG __edge_image=iwhicr.azurecr.io/webmethods-edge-runtime:12.0.6.0
 
 FROM ${__edge_image} AS wmpcli
 
 ARG __guest_wm_home=/opt/webmethods
 ARG __guest_is_home=${__guest_wm_home}/IntegrationServer
-
 
 # Secret is mounted at /run/secrets/wpm_token and never written to any layer.
 # mode=0444 allows the non-root sagadmin user to read it (default 0400 is root-only).
@@ -21,6 +19,5 @@ FROM ${__edge_image}
 
 ARG __guest_wm_home=/opt/webmethods
 ARG __guest_is_home=${__guest_wm_home}/IntegrationServer
-
 
 COPY --from=wmpcli --chown=sagadmin:root ${__guest_is_home}/packages/WmJDBCAdapter/ ${__guest_is_home}/packages/WmJDBCAdapter/

@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG __target_image=iwhicr.azurecr.io/webmethods-edge-runtime:12.0.5.0
+ARG __target_image=iwhicr.azurecr.io/webmethods-edge-runtime:12.0.6.0
 
 FROM ${__target_image} AS jarsource
 
