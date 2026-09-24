@@ -11,7 +11,7 @@ ARG __guest_is_home=${__guest_wm_home}/IntegrationServer
 # mode=0444 allows the non-root sagadmin user to read it (default 0400 is root-only).
 RUN --mount=type=secret,id=wpm_token,mode=0444 \
     test -s /run/secrets/wpm_token || { echo "YOU MUST SET --secret id=wpm_token"; exit 1; } && \
-    ${__guest_wm_home}/wpm/bin/wpm.sh install WmJDBCAdapter \
+    ${__guest_wm_home}/wpm/bin/wpm.sh install WmJDBCAdapter:10.3.10.25 \
         -d ${__guest_is_home} \
         -wr licensed \
         -ad true \
