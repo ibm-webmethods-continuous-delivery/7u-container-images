@@ -1,4 +1,4 @@
-ARG __alpine_tag=3.24
+ARG __alpine_tag=3
 FROM alpine:${__alpine_tag} AS base
 
 ARG __tf_ver=1.16.3
