@@ -6,9 +6,13 @@ FROM alpine:3 AS builder
 # SPDX-License-Identifier: Apache-2.0
 #
 
-RUN apk add --no-cache go musl-dev git ca-certificates
+# We do not agree with this hadolint rule for Alpine or any other distro that only works with the latest version of a package.
+# hadolint ignore=DL3018
+RUN apk upgrade \
+    && apk update \
+    && apk add --no-cache go musl-dev git ca-certificates
 
-ARG VERSION=v0.0.2
+ARG VERSION=v0.0.5
 ARG GIT_REPO=https://github.com/ibm-webmethods-continuous-delivery/7u-ibm-doc-fetcher-cli.git
 
 WORKDIR /build
@@ -24,6 +28,7 @@ RUN CGO_ENABLED=0 go build \
     ./cmd/ibmdocs
 
 # Verify static linkage
+# hadolint ignore=DL4006
 RUN ldd ibmdocs 2>&1 | grep -qE "(statically linked|Not a valid dynamic program|not a dynamic executable)" \
     || (echo "ERROR: binary is not statically linked" && exit 1)
 
