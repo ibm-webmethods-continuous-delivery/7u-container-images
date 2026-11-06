@@ -12,24 +12,26 @@ RUN apk upgrade \
     && apk update \
     && apk add --no-cache go musl-dev git ca-certificates
 
-ARG VERSION=v0.0.5
-ARG GIT_REPO=https://github.com/ibm-webmethods-continuous-delivery/7u-ibm-doc-fetcher-cli.git
+ARG VERSION=ibmdocs/v0.0.7
+ARG GIT_REPO=https://github.com/ibm-webmethods-continuous-delivery/7u-cli-tools.git
 
 WORKDIR /build
 
 RUN git clone --depth 1 --branch ${VERSION} ${GIT_REPO} .
 
+WORKDIR /build/code/ibmdocs
+
 RUN CGO_ENABLED=0 go build \
     -ldflags "-s -w \
-      -X github.com/ibm-webmethods-aftermarket-tools/7u-ibm-doc-fetcher-cli/cmd.version=${VERSION} \
-      -X github.com/ibm-webmethods-aftermarket-tools/7u-ibm-doc-fetcher-cli/cmd.buildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
-      -X github.com/ibm-webmethods-aftermarket-tools/7u-ibm-doc-fetcher-cli/cmd.gitCommit=$(git rev-parse --short HEAD)" \
-    -o ibmdocs \
+      -X github.com/ibm-webmethods-continuous-delivery/7u-cli-tools/code/ibmdocs/cmd.version=${VERSION} \
+      -X github.com/ibm-webmethods-continuous-delivery/7u-cli-tools/code/ibmdocs/cmd.buildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+      -X github.com/ibm-webmethods-continuous-delivery/7u-cli-tools/code/ibmdocs/cmd.gitCommit=$(git rev-parse --short HEAD)" \
+    -o /build/ibmdocs \
     ./cmd/ibmdocs
 
 # Verify static linkage
 # hadolint ignore=DL4006
-RUN ldd ibmdocs 2>&1 | grep -qE "(statically linked|Not a valid dynamic program|not a dynamic executable)" \
+RUN ldd /build/ibmdocs 2>&1 | grep -qE "(statically linked|Not a valid dynamic program|not a dynamic executable)" \
     || (echo "ERROR: binary is not statically linked" && exit 1)
 
 # Stage 2: minimal runtime image
@@ -39,5 +41,6 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /build/ibmdocs /ibmdocs
+COPY --from=builder /build/code/ibmdocs/util/skills/ibmdocs/SKILL.md /SKILL.md
 
 ENTRYPOINT ["/ibmdocs"]
