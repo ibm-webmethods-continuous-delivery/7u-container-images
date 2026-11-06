@@ -18,6 +18,7 @@ cd "$SCRIPT_DIR"
 # Defaults
 BUILD_TARGET="all"
 ENABLE_SCAN="false"
+NO_CACHE="false"
 
 . .env
 
@@ -30,6 +31,9 @@ for arg in "$@"; do
     --scan|-s)
       ENABLE_SCAN="true"
       ;;
+    --no-cache)
+      NO_CACHE="true"
+      ;;
     *)
       BUILD_TARGET="$arg"
       ;;
@@ -41,6 +45,7 @@ echo "Container Image Builder"
 echo "==================================="
 echo "Build Target:  $BUILD_TARGET"
 echo "Scanning:      $ENABLE_SCAN"
+echo "No Cache:      $NO_CACHE"
 echo "Build User ID: $BUILD_USER_ID"
 echo "Build Group ID:$BUILD_GROUP_ID"
 echo "==================================="
@@ -49,6 +54,7 @@ echo
 docker compose run --rm \
   -e BUILD_TARGET="$BUILD_TARGET" \
   -e ENABLE_SCAN="$ENABLE_SCAN" \
+  -e NO_CACHE="$NO_CACHE" \
   -e BUILD_USER_ID="$BUILD_USER_ID" \
   -e BUILD_GROUP_ID="$BUILD_GROUP_ID" \
   7u-ci-builder

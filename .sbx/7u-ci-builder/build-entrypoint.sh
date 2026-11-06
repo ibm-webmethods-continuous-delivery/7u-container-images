@@ -18,6 +18,8 @@ set -e
 # Default to building all if not specified
 BUILD_TARGET="${BUILD_TARGET:-all}"
 ENABLE_SCAN="${ENABLE_SCAN:-false}"
+NO_CACHE="${NO_CACHE:-false}"
+export NO_CACHE
 
 # Create session ID for this build/scan run
 SCAN_SESSION=$(date +%Y%m%d_%H%M%S)
@@ -155,7 +157,7 @@ build_image() {
 
     # Build the image
     cd "/workspace/images/$image_dir" || return 1
-    sh "$script_name"
+    NO_CACHE="$NO_CACHE" sh "$script_name"
     local result=$?
 
     if [ $result -ne 0 ]; then
